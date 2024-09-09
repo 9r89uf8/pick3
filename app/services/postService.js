@@ -5,6 +5,7 @@ export const fetchPosts = async () => {
     const setPosts = useStore.getState().setPosts;
     try {
         const response = await fetch('/api/posts/get');
+        console.log(response)
 
         if (response.ok) {
             const posts = await response.json();
