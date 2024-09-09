@@ -21,6 +21,7 @@ export const fetchPosts = async () => {
 
 
 export const deleteAllFromCurrentMonth = async () => {
+    console.log('delete all')
     try {
         const response = await fetch('/api/posts/deleteAll');
 
