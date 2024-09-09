@@ -5,18 +5,16 @@ export const fetchPosts = async () => {
     const setPosts = useStore.getState().setPosts;
     try {
         const response = await fetch('/api/posts/get');
-        console.log(response)
 
         if (response.ok) {
             const posts = await response.json();
             setPosts(posts);
             return posts;
         } else {
-            console.log('error')
             throw new Error('Failed to fetch posts');
         }
     } catch (error) {
-        console.error(error.message);
+        console.error(error);
         return [];
     }
 };
@@ -24,7 +22,7 @@ export const fetchPosts = async () => {
 
 export const deleteAllFromCurrentMonth = async () => {
     try {
-        const response = await fetch('/api/posts/deleteAllp');
+        const response = await fetch('/api/posts/deleteAll');
 
         if (response.ok) {
             const posts = await response.json();
