@@ -27,6 +27,7 @@ const getMonths = () => {
 
 
 export async function GET() {
+    console.log('api')
     try {
         // const firstSnapshot = await admin.firestore().collection('firstPicks').where("drawMonth", "==", "Jul").orderBy('index', 'desc').get();
         // const first = firstSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));

@@ -12,10 +12,11 @@ export const fetchPosts = async () => {
             setPosts(posts);
             return posts;
         } else {
+            console.log('error')
             throw new Error('Failed to fetch posts');
         }
     } catch (error) {
-        console.error(error);
+        console.error(error.message);
         return [];
     }
 };
