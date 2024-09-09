@@ -26,7 +26,7 @@ const getMonths = () => {
 };
 
 
-export async function GET() {
+export async function DELETE() {
     try {
 
         const [prevMonth, currentMonth] = getMonths();
