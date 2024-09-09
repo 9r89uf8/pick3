@@ -31,7 +31,7 @@ export async function GET() {
 
         const [prevMonth, currentMonth] = getMonths();
         // Get all documents in the 'firstPicks' collection where 'drawMonth' is 'Jul'
-        const picturesSnapshot = await adminDb.firestore().collection('draws').where("drawMonth", "==", currentMonth).get();
+        const picturesSnapshot = await adminDb.firestore().collection('draws').where("drawMonth", "==", 'Oct').get();
 
         // Create a batch to perform multiple operations
         const batch = adminDb.firestore().batch();
