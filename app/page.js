@@ -32,10 +32,8 @@ const HomePage = () => {
 
   // Fetch posts on component mount
   useEffect(() => {
-    console.log('called')
     const getPosts = async () => {
       const fetchedPosts = await fetchPosts(); // Call the fetchPosts function
-      console.log(fetchedPosts)
     };
 
     getPosts();

@@ -36,7 +36,7 @@ export async function GET() {
 // Query for both July and June
         const drawsCollection = firestore
             .collection("draws")
-            .where("drawMonth", "in", [currentMonth, prevMonth]);
+            .where("drawMonth", "==", 'Sep');
 
         const snapshot = await drawsCollection.get();
         const draws = [];

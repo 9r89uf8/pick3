@@ -22,7 +22,7 @@ export const fetchPosts = async () => {
 
 export const deleteAllFromCurrentMonth = async () => {
     try {
-        const response = await fetch('/api/posts/deleteAll');
+        const response = await fetch('/api/posts/deleteAllp');
 
         if (response.ok) {
             const posts = await response.json();
