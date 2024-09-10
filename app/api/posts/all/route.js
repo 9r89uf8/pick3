@@ -66,7 +66,10 @@ export async function GET() {
 
         return new Response(JSON.stringify(draws), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store, max-age=0'
+            },
         });
     } catch (error) {
         console.log(error.message)
