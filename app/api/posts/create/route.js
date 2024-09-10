@@ -8,6 +8,7 @@ export const revalidate = 0;
 export const config = {
     maxDuration: 60,
 };
+
 export async function POST(req) {
     try {
         // Prepare the data you want to send to the Lambda function
