@@ -1,7 +1,8 @@
 import { adminDb } from '@/app/utils/firebaseAdmin';
 import axios from 'axios';
 
-
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export async function POST(req) {
     try {
         // Prepare the data you want to send to the Lambda function
@@ -46,7 +47,10 @@ export async function POST(req) {
         // Continue with your logic...
         return new Response(JSON.stringify({ response }), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store, max-age=0'
+            },
         });
     } catch (error) {
         console.error('Error calling Lambda:', error.message);

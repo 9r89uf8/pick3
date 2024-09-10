@@ -1,7 +1,8 @@
 // app/api/posts/route.js
 import { adminDb } from '@/app/utils/firebaseAdmin';
 
-
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 function generateNumberArray() {
     // Generate the first number between 0 and 1
     let firstNumber = Math.floor(Math.random() * 2);
@@ -139,7 +140,10 @@ export async function GET() {
 
         return new Response(JSON.stringify(finalDraws), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store, max-age=0'
+            },
         });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {

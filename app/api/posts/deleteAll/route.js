@@ -1,7 +1,8 @@
 // app/api/posts/route.js
 import { adminDb } from '@/app/utils/firebaseAdmin';
 
-
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 const getMonths = () => {
     const currentDate = new Date();
     const currentMonthIndex = currentDate.getMonth(); // 0-11 (January is 0, December is 11)
@@ -48,7 +49,10 @@ export async function DELETE() {
 
         return new Response(JSON.stringify(response), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store, max-age=0'
+            },
         });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
