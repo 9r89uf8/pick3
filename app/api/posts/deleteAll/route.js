@@ -41,6 +41,7 @@ export async function DELETE() {
             batch.delete(doc.ref);
         });
 
+
         // Commit the batch
         await batch.commit();
         let response = 'deleted all for current month'
