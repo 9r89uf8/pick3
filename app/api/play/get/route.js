@@ -50,6 +50,7 @@ const getMonths = () => {
 
 
 export async function GET() {
+    console.log('called')
     try {
 
         const [prevMonth, currentMonth] = getMonths();
