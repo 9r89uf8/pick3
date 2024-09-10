@@ -27,6 +27,7 @@ const getMonths = () => {
 
 
 export async function GET() {
+    console.log("Attempting to connect to Firebase...");
     try {
         // const firstSnapshot = await admin.firestore().collection('firstPicks').where("drawMonth", "==", "Jul").orderBy('index', 'desc').get();
         // const first = firstSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -39,6 +40,8 @@ export async function GET() {
             .where("drawMonth", "in", [currentMonth, prevMonth]);
 
         const snapshot = await drawsCollection.get();
+        console.log("Firebase connection successful.");
+        console.log(`Found ${snapshot.size} documents`);
         const draws = [];
 
 // Loop through the documents and add them to the array
@@ -72,7 +75,7 @@ export async function GET() {
             },
         });
     } catch (error) {
-        console.log(error.message)
+        console.error("Error in GET /api/posts:", error);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
