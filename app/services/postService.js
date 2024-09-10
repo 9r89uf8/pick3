@@ -21,13 +21,13 @@ export const fetchPosts = async () => {
 
 
 export const deleteAllFromCurrentMonth = async () => {
-    console.log('delete all')
     try {
-        const response = await fetch('/api/posts/deleteAll');
-
+        const response = await fetch('/api/posts/deleteAll', {
+            method: 'DELETE',
+        });
         if (response.ok) {
-            const posts = await response.json();
-            return posts;
+            const result = await response.json();
+            return result;
         } else {
             throw new Error('Failed to delete all posts');
         }
