@@ -50,7 +50,6 @@ const getMonths = () => {
 
 
 export async function GET() {
-    console.log('called')
     try {
 
         const [prevMonth, currentMonth] = getMonths();
@@ -65,8 +64,6 @@ export async function GET() {
         // ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
         const snapshot = await drawsCollection.get();
-        console.log("Firebase connection successful.");
-        console.log(`Found ${snapshot.size} documents`);
         const draws = [];
 
         // Loop through the documents and add them to the array
