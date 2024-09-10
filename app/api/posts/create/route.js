@@ -3,6 +3,11 @@ import axios from 'axios';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+
+// Increase the default runtime to 180 seconds (3 minutes)
+export const config = {
+    maxDuration: 60,
+};
 export async function POST(req) {
     try {
         // Prepare the data you want to send to the Lambda function
