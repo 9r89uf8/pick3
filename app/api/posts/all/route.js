@@ -1,6 +1,9 @@
 // app/api/posts/route.js
+import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/app/utils/firebaseAdmin';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const getMonths = () => {
     const currentDate = new Date();
