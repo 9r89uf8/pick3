@@ -4,7 +4,9 @@ import { useStore } from '../store/store'; // Ensure you import the correct stor
 export const fetchPosts = async () => {
     const setPosts = useStore.getState().setPosts;
     try {
-        const response = await fetch('/api/posts/get');
+        const response = await fetch('/api/posts/all', {
+            method: 'GET',
+        });
 
         if (response.ok) {
             const posts = await response.json();
