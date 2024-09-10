@@ -6,6 +6,7 @@ export const fetchPosts = async () => {
     try {
         const response = await fetch('/api/posts/all', {
             method: 'GET',
+            cache: 'no-store'
         });
 
         if (response.ok) {
