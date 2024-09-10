@@ -58,12 +58,14 @@ export async function GET() {
         // Query for both July and June
         const drawsCollection = firestore
             .collection("draws")
-            .where("drawMonth", "in", ['Feb', 'Jan']);
+            .where("drawMonth", "in", [currentMonth, prevMonth]);
         //                                                 [first, second]
 
         // ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
         const snapshot = await drawsCollection.get();
+        console.log("Firebase connection successful.");
+        console.log(`Found ${snapshot.size} documents`);
         const draws = [];
 
         // Loop through the documents and add them to the array
