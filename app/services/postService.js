@@ -11,7 +11,6 @@ export const fetchPosts = async () => {
 
         if (response.ok) {
             const posts = await response.json();
-            console.log(posts)
             setPosts(posts);
             return posts;
         } else {
