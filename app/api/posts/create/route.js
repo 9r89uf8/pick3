@@ -14,7 +14,7 @@ export async function POST(req) {
 
         // Call the AWS Lambda function using Axios with a longer timeout
         const lambdaResponse = await axios.get(
-            'https://w6z9k8o0kh.execute-api.us-east-2.amazonaws.com/default/pick3layer',
+            'https://cpp4cknnn7rn6idxxtmwvkylxq0bzefn.lambda-url.us-east-2.on.aws/',
             {
                 timeout: timeoutMs,
                 // You can add headers here if needed
