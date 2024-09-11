@@ -23,20 +23,24 @@ export const fetchPosts = async () => {
 };
 
 export const checkPosts = async () => {
-    const setPosts = useStore.getState().setPosts;
+    const setCheckLoading = useStore.getState().setCheckLoading;
     try {
+        setCheckLoading(true)
         const response = await fetch('/api/posts/check', {
             method: 'GET',
             cache: 'no-store'
         });
 
         if (response.ok) {
+            setCheckLoading(false)
             const posts = await response.json();
             return posts;
         } else {
+            setCheckLoading(false)
             throw new Error('Failed to check posts');
         }
     } catch (error) {
+        setCheckLoading(false)
         console.error(error);
         return [];
     }

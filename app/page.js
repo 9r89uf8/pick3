@@ -28,6 +28,7 @@ const HomePage = () => {
 
   const posts = useStore((state) => state.posts);
   const numbers = useStore((state) => state.numbers);
+  const loadingCheck = useStore((state) => state.checkLoading);
   const clearNumbers = useStore((state) => state.clearNumbers); // Get the clearNumbers function
 
   // Fetch posts on component mount
@@ -97,6 +98,7 @@ const HomePage = () => {
                       color: 'black',
                       // Add more styling as needed
                     }}
+                    disabled={loadingCheck}
                 >
                   Check
                 </Button>

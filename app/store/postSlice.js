@@ -7,6 +7,7 @@ export const createPostSlice = (set) => ({
         createAllPosts: false,
         deleteAllFromCurrentMonth: false,
     },
+    checkLoading: false,
     setPost: (post) => set({ post }),
     setPosts: (posts) => set({ posts }),
     addPost: (post) => set((state) => ({ posts: [post, ...state.posts] })),
@@ -16,5 +17,7 @@ export const createPostSlice = (set) => ({
     })),
     setLoading: (action, isLoading) => set((state) => ({
         isLoading: { ...state.isLoading, [action]: isLoading }
-    }))
+    })),
+    setCheckLoading: (checkLoading) => set({ checkLoading })
+
 });
