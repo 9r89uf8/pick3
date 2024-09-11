@@ -33,16 +33,11 @@ export async function GET(req) {
         const draws = adminDb.firestore().collection('draws');
 
         response['timestamp'] = adminDb.firestore.FieldValue.serverTimestamp()
-        // Save the response data to Firestore
-        draws.add(response)
-            .then((docRef) => {
-                console.log("Document successfully written with ID: ", docRef.id);
-            })
-            .catch((error) => {
-                console.error("Error adding document: ", error);
-            });
 
-        console.log(response)
+        console.log('Saving response to Firestore...');
+        const docRef = await draws.add(response);
+        console.log("Document successfully written with ID: ", docRef.id);
+
         // Continue with your logic...
         return new Response(JSON.stringify({ response }), {
             status: 200,
