@@ -27,26 +27,26 @@ const Navbar = () => {
             <Toolbar>
                 <Box display="flex" alignItems="center" flexGrow={1}>
                     <img
-                        src="https://chicagocarhelp.s3.us-east-2.amazonaws.com/RIFas+(3).png"
+                        src="https://chicagocarhelp.s3.us-east-2.amazonaws.com/Untitled+design+(2).png"
                         alt="logo"
                         style={{ width: 60, height: 'auto', marginRight: 4 }}
                     />
-                    <Button color="inherit" onClick={() => router.push('/')}>Rifas de Carros</Button>
+                    <Button color="inherit" onClick={() => router.push('/')}></Button>
                 </Box>
 
-                <div>
-                    <IconButton
-                        size="large"
-                        edge="end"
-                        aria-label="account of current user"
-                        aria-controls="menu-appbar"
-                        aria-haspopup="true"
-                        onClick={handleMenuOpen}
-                        color="inherit"
-                    >
-                        <DehazeIcon />
-                    </IconButton>
-                </div>
+                {/*<div>*/}
+                {/*    <IconButton*/}
+                {/*        size="large"*/}
+                {/*        edge="end"*/}
+                {/*        aria-label="account of current user"*/}
+                {/*        aria-controls="menu-appbar"*/}
+                {/*        aria-haspopup="true"*/}
+                {/*        onClick={handleMenuOpen}*/}
+                {/*        color="inherit"*/}
+                {/*    >*/}
+                {/*        <DehazeIcon />*/}
+                {/*    </IconButton>*/}
+                {/*</div>*/}
             </Toolbar>
         </AppBar>
     );
