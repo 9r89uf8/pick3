@@ -2,11 +2,12 @@
   "crons": [
     {
       "path": "/api/posts/create",
-      "schedule": "0 13 * * *"
+      "schedule": "0 18 * * *"
     },
     {
       "path": "/api/posts/create",
-      "schedule": "30 22 * * *"
+      "schedule": "30 3 * * *"
     }
   ]
 }
+
