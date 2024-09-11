@@ -86,24 +86,28 @@ const HomePage = () => {
 
               </div>
 
-              <div>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    size='large'
-                    style={{marginTop: 12}}
-                    onClick={() => check()}
-                    sx={{
-                      background: 'linear-gradient(to right, #ffffff, #e5e5e5)', // Green gradient
-                      color: 'black',
-                      // Add more styling as needed
-                    }}
-                    disabled={loadingCheck}
-                >
-                  Check
-                </Button>
+              {numbers&&numbers.length<=0&&
+                  <div>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size='large'
+                        style={{marginTop: 12}}
+                        onClick={() => check()}
+                        sx={{
+                          background: 'linear-gradient(to right, #ffffff, #e5e5e5)', // Green gradient
+                          color: 'black',
+                          // Add more styling as needed
+                        }}
+                        disabled={loadingCheck}
+                    >
+                      Check
+                    </Button>
 
-              </div>
+                  </div>
+              }
+
+
 
               {numbers&&numbers.length>0&&
                   <div>
