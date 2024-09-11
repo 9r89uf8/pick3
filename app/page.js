@@ -1,7 +1,7 @@
 'use client';
 // app/page.js
 import React, { useEffect, useState } from 'react';
-import { fetchPosts, createPost, createAllPosts } from './services/postService'; // Import the fetchPosts service
+import { fetchPosts, createPost, createAllPosts, checkPosts } from './services/postService'; // Import the fetchPosts service
 import Link from 'next/link';
 import DrawsList from "@/app/components/DrawsList";
 import { Button, List, ListItem, Container, Typography, Box } from '@mui/material';
@@ -44,6 +44,10 @@ const HomePage = () => {
     await playNums();
   };
 
+  const check = async () => {
+    await checkPosts();
+  };
+
   const handleClear = () => {
     clearNumbers(); // Call clearNumbers to clear the numbers array
   };
@@ -77,6 +81,24 @@ const HomePage = () => {
                     }}
                 >
                   Play
+                </Button>
+
+              </div>
+
+              <div>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    size='large'
+                    style={{marginTop: 12}}
+                    onClick={() => check()}
+                    sx={{
+                      background: 'linear-gradient(to right, #ffffff, #e5e5e5)', // Green gradient
+                      color: 'black',
+                      // Add more styling as needed
+                    }}
+                >
+                  Check
                 </Button>
 
               </div>

@@ -22,6 +22,26 @@ export const fetchPosts = async () => {
     }
 };
 
+export const checkPosts = async () => {
+    const setPosts = useStore.getState().setPosts;
+    try {
+        const response = await fetch('/api/posts/check', {
+            method: 'GET',
+            cache: 'no-store'
+        });
+
+        if (response.ok) {
+            const posts = await response.json();
+            return posts;
+        } else {
+            throw new Error('Failed to check posts');
+        }
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
+};
+
 
 export const deleteAllFromCurrentMonth = async () => {
     try {
