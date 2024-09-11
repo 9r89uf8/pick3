@@ -28,7 +28,7 @@ export async function GET(req) {
 
         // Get the response data from Lambda
         const response = lambdaResponse.data;
-        console.log(response)
+
 
         const draws = adminDb.firestore().collection('draws');
 
@@ -42,6 +42,7 @@ export async function GET(req) {
                 console.error("Error adding document: ", error);
             });
 
+        console.log(response)
         // Continue with your logic...
         return new Response(JSON.stringify({ response }), {
             status: 200,
