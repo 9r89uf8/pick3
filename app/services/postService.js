@@ -70,7 +70,7 @@ export const deleteAllFromCurrentMonth = async () => {
 export const createPost = async () => {
     try {
         const response = await fetch('/api/posts/create', {
-            method: 'POST',
+            method: 'GET',
             cache: 'no-store'
         });
 

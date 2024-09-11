@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 
-export async function POST(req) {
+export async function GET(req) {
     try {
         // Prepare the data you want to send to the Lambda function
         const requestData = {
