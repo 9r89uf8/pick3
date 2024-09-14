@@ -2,6 +2,8 @@
 // app/page.js
 import React, { useEffect, useState } from 'react';
 import { fetchPosts, createPost, createAllPosts, checkPosts } from './services/postService'; // Import the fetchPosts service
+import {createHistory} from "@/app/services/historyService";
+import NumberFrequencyChart from "@/app/components/NumberFrequencyChart";
 import Link from 'next/link';
 import DrawsList from "@/app/components/DrawsList";
 import { Button, List, ListItem, Container, Typography, Box } from '@mui/material';
@@ -43,6 +45,7 @@ const HomePage = () => {
 
   const play = async () => {
     await playNums();
+
   };
 
   const check = async () => {
@@ -131,6 +134,8 @@ const HomePage = () => {
 
             </Item>
           </Container>
+
+        <NumberFrequencyChart/>
 
         {posts.length > 0 ? (
             <Box display="flex" flexDirection="column" alignItems="center">
