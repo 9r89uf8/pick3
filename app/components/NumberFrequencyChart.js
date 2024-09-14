@@ -9,7 +9,7 @@ import {
     Select,
     MenuItem,
     FormControl,
-    InputLabel,
+    InputLabel, Button,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
@@ -21,6 +21,7 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from 'recharts';
+import {createHistory} from "@/app/services/historyService";
 
 // Define month names and helper functions before the component
 const monthNames = [
@@ -57,6 +58,11 @@ const NumberFrequencyChart = () => {
         fetchNumberFrequency();
     }, [selectedMonth]);
 
+    const update = async () => {
+        await createHistory()
+
+    };
+
     // Convert numberFrequency object into an array of { number, frequency }
     let data = [];
     if (numberFrequency) {
@@ -86,6 +92,7 @@ const NumberFrequencyChart = () => {
                 <Typography variant="h5" gutterBottom>
                     Number Frequency
                 </Typography>
+
                 <FormControl
                     variant="outlined"
                     sx={{ minWidth: 120, marginBottom: 2, color: '#fff' }}
@@ -122,6 +129,26 @@ const NumberFrequencyChart = () => {
                         ))}
                     </Select>
                 </FormControl>
+
+
+                <div>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size='large'
+                        style={{margin: 5 }}
+                        onClick={() => update()}
+                        sx={{
+                            background: 'linear-gradient(to right, #f8f9fa, #e9ecef)', // Green gradient
+                            color: 'black',
+                            // Add more styling as needed
+                        }}
+                    >
+                        update
+                    </Button>
+                </div>
+
+
                 {loading ? (
                     <Typography variant="body1">Loading...</Typography>
                 ) : numberFrequency ? (
