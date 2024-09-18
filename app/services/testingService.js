@@ -4,7 +4,7 @@ import { useStore } from '../store/store'; // Ensure you import the correct stor
 export const analyze60 = async () => {
     const setPosts = useStore.getState().setPosts;
     try {
-        const response = await fetch('/api/testing/analyze', {
+        const response = await fetch('/api/frontPair/analyze', {
             method: 'GET',
             cache: 'no-store'
         });
@@ -24,7 +24,7 @@ export const analyze60 = async () => {
 export const analyze10K = async () => {
     const setPosts = useStore.getState().setPosts;
     try {
-        const response = await fetch('/api/testing/analyzeAllCombinations', {
+        const response = await fetch('/api/frontPair/analyzeAllCombinations', {
             method: 'GET',
             cache: 'no-store'
         });

@@ -1,20 +1,12 @@
 // app/api/posts/route.js
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/app/utils/firebaseAdmin';
+import {azAZ} from "@mui/material/locale";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 
-async function isSimilarToLastDraws(currentDraw, lastDrawsDocs) {
-    for (const draw of lastDrawsDocs) {
-
-        if (currentDraw.currentDraw === draw.currentDraw) {
-            return true;
-        }
-    }
-    return false;
-}
 
 async function hasZeroOneTwo(draw) {
     const numbers = [
@@ -24,19 +16,10 @@ async function hasZeroOneTwo(draw) {
     return numbers.includes(0) || numbers.includes(1);
 }
 
-async function hasSixSevenEightNine(draw) {
-    const numbers = [
-        draw.currentFirstNumber,
-        draw.currentSecondNumber,
-        draw.currentThirdNumber
-    ];
-    return numbers.includes(6) || numbers.includes(7) || numbers.includes(8) || numbers.includes(9);
-}
 
 
 async function isSimilarFirstTwo(currentDraw, lastDrawsDocs) {
     for (const draw of lastDrawsDocs) {
-
         if (currentDraw.firstAndSecondNumber === draw.firstAndSecondNumber) {
             return true;
         }
@@ -47,7 +30,6 @@ async function isSimilarFirstTwo(currentDraw, lastDrawsDocs) {
 
 async function isSimilarToLastFirst(currentDraw, lastDrawsDocs) {
     for (const draw of lastDrawsDocs) {
-
         if (currentDraw.currentFirstNumber === draw.currentFirstNumber) {
             return true;
         }
@@ -55,15 +37,55 @@ async function isSimilarToLastFirst(currentDraw, lastDrawsDocs) {
     return false;
 }
 
-async function isSimilarToSecondThird(currentDraw, lastDrawsDocs) {
-    for (const draw of lastDrawsDocs) {
 
-        if (currentDraw.secondAndThirdNumber === draw.secondAndThirdNumber) {
-            return true;
+async function analyzeMovements(draws) {
+    const filteredDraws = draws.filter(draw => draw.monthOrder === 1);
+    let pass = 0;
+    let fail = 0;
+
+    // Initialize counters for each condition that wasn't met
+    let isSimilarFailCount = 0;
+    let isSimilarFSFailCount = 0;
+    let isSimilarLFFailCount = 0;
+    let hasZeroOneTwoPassCount = 0;
+    let hasSixSevenEightNineCount = 0;
+    let isSimilarSTFailCount = 0;
+
+    for (let i = 1; i < filteredDraws.length; i++) {
+        let currentDraw = filteredDraws[i];
+        const isSimilarFS = await isSimilarFirstTwo(currentDraw, draws.slice(i + 1, i + 20));
+        const isSimilarLF = await isSimilarToLastFirst(currentDraw, draws.slice(i + 1, i + 2));
+        const hasZeroOneTwoCheck = await hasZeroOneTwo(currentDraw)
+
+        // Check and increment fail counts for each condition
+        if (isSimilarFS) {
+            isSimilarFSFailCount += 1;
+        }
+        if (isSimilarLF) {
+            isSimilarLFFailCount += 1;
+        }
+        if(hasZeroOneTwoCheck){
+            hasZeroOneTwoPassCount += 1;
+        }
+
+
+        if (!isSimilarFS && hasZeroOneTwoCheck) {
+            pass += 1;
+        } else {
+            fail += 1;
         }
     }
-    return false;
+
+    // Return the counts, including individual condition fail counts
+    return {
+        pass,
+        fail,
+        isSimilarFSFailCount,
+        isSimilarLFFailCount,
+        hasZeroOneTwoPassCount
+    };
 }
+
 
 const getMonths = () => {
     const currentDate = new Date();
@@ -91,8 +113,14 @@ const getMonths = () => {
 
 export async function GET() {
     try {
-        const [prevMonth, currentMonth] = getMonths();
+        // const firstSnapshot = await admin.firestore().collection('firstPicks').where("drawMonth", "==", "Jul").orderBy('index', 'desc').get();
+        // const first = firstSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        // const [prevMonth, currentMonth] = getMonths();
+        let currentMonth = 'Aug'
+        let prevMonth = 'Jul'
         const firestore = adminDb.firestore();
+
+// Query for both July and June
         const drawsCollection = firestore
             .collection("draws")
             .where("drawMonth", "in", [currentMonth, prevMonth]);
@@ -105,9 +133,9 @@ export async function GET() {
             const drawData = doc.data();
             drawData.id = doc.id; // Add the document ID to the draw data
             drawData.monthOrder = drawData.drawMonth === currentMonth ? 1 : 2;  // Assign an artificial order to the months
-            drawData.ref = doc.ref; // **Add the document reference**
             draws.push(drawData);
         });
+
 
 // Sort the combined array by 'monthOrder' and then by 'index'
         draws.sort((a, b) => {
@@ -122,59 +150,21 @@ export async function GET() {
             }
         });
 
-// First, set all passCondition to false
-        const batch = firestore.batch(); // **Assuming you're using the Firestore instance directly**
-        draws.forEach(draw => {
-            if (draw.drawMonth === currentMonth) {
-                batch.update(draw.ref, { passCondition: false });
-            }
-        });
-        await batch.commit();
-
-        let total = 0;
-        for (let i = 0; i < draws.length; i++) {
-            const draw = draws[i]; // **draw is now the data object with ref**
-
-            // Only process draws from the current month
-            if (draw.drawMonth !== currentMonth) {
-                continue; // Skip draws from the previous month
-            }
-
-            let checksPass = true;
-
-            // History check
-            if (checksPass) {
-                const isSimilar = await isSimilarToLastDraws(draw, draws.slice(i + 1, i + 60));
-                const isSimilarFS = await isSimilarFirstTwo(draw, draws.slice(i + 1, i + 20));
-                const isSimilarLF = await isSimilarToLastFirst(draw, draws.slice(i + 1, i + 2));
-                const isSimilarST = await isSimilarToSecondThird(draw, draws.slice(i + 1, i + 10));
-                const hasZeroOneTwoCheck = await hasZeroOneTwo(draw);
-
-                if (isSimilarFS || !hasZeroOneTwoCheck) {
-                    checksPass = false;
-                }
-            }
-
-            if (checksPass) {
-                total += 1;
-                await draw.ref.update({ passCondition: true }); // **Use draw.ref to update the document**
-                console.log(`Updated passCondition to true for document ${draw.id}`);
-            }
-        }
-
-
-        console.log(`Total passes: ${total}`);
-
-        return NextResponse.json(total, {
+        console.log(`draws length: ${draws.length}`)
+        const result = await analyzeMovements(draws)
+        console.log(result)
+        return new Response(JSON.stringify(draws), {
             status: 200,
             headers: {
+                'Content-Type': 'application/json',
                 'Cache-Control': 'no-store, max-age=0'
-            }
+            },
         });
     } catch (error) {
-        console.error('Error in GET function:', error);
-        return NextResponse.json({ error: error.message }, {
-            status: 500
+        console.log(error.message)
+        return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' },
         });
     }
 }

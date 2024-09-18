@@ -44,7 +44,7 @@ async function hasZeroOneTwo(draw) {
         draw.currentSecondNumber,
         draw.currentThirdNumber
     ];
-    return numbers.includes(0) || numbers.includes(1) || numbers.includes(2);
+    return numbers.includes(0) || numbers.includes(1);
 }
 
 async function isSimilarFirstTwo(currentDraw, lastDrawsDocs) {
@@ -122,33 +122,37 @@ export async function GET() {
 
             // Generate 4 random digits from 0-9
             const digits = [];
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < 2; i++) {
                 digits.push(Math.floor(Math.random() * 10));
             }
+
+            // const currentDraw = {
+            //     currentDraw: digits.join(''),
+            //     currentFirstNumber: digits[0],
+            //     currentSecondNumber: digits[1],
+            //     currentThirdNumber: digits[2],
+            //     firstAndSecondNumber: digits[0] + digits[1],
+            //     secondAndThirdNumber: digits[1] + digits[2]
+            // };
 
             const currentDraw = {
                 currentDraw: digits.join(''),
                 currentFirstNumber: digits[0],
                 currentSecondNumber: digits[1],
-                currentThirdNumber: digits[2],
-                firstAndSecondNumber: digits[0] + digits[1],
-                secondAndThirdNumber: digits[1] + digits[2]
+                firstAndSecondNumber: digits[0] + digits[1]
             };
 
 
 
             // Now check the conditions
             const isSimilar = await isSimilarToLastDraws(currentDraw, draws.slice(0, 60));
-            const isSimilarFS = await isSimilarFirstTwo(currentDraw, draws.slice(0, 60));
+            const isSimilarFS = await isSimilarFirstTwo(currentDraw, draws.slice(0, 20));
             const isSimilarLF = await isSimilarToLastFirst(currentDraw, draws.slice(0, 2));
             const isSimilarST = await isSimilarToSecondThird(currentDraw, draws.slice(0, 10));
             const hasZeroOneTwoCheck = await hasZeroOneTwo(currentDraw)
 
             if (
-                !isSimilar &&
                 !isSimilarFS &&
-                !isSimilarLF &&
-                !isSimilarST &&
                 hasZeroOneTwoCheck
             ) {
                 // The combination fails all conditions
