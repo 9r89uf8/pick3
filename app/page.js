@@ -45,7 +45,7 @@ const HomePage = () => {
 
 
   const play = async () => {
-    await play();
+    await playNums();
 
   };
 
