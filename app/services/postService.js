@@ -89,7 +89,7 @@ export const createPost = async () => {
 export const createAllPosts = async () => {
     try {
         const response = await fetch('/api/posts/createAll', {
-            method: 'POST',
+            method: 'GET',
             cache: 'no-store'
         });
 

@@ -135,7 +135,7 @@ const HomePage = () => {
             </Item>
           </Container>
 
-        <NumberFrequencyChart/>
+        {/*<NumberFrequencyChart/>*/}
 
         {posts.length > 0 ? (
             <Box display="flex" flexDirection="column" alignItems="center">
