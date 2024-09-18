@@ -7,37 +7,61 @@ export const revalidate = 0;
 
 
 async function isSimilarToLastDraws(currentDraw, lastDrawsDocs) {
-    for (const doc of lastDrawsDocs) {
-        const lastDraw = doc.data();
+    for (const draw of lastDrawsDocs) {
 
-        if (areSimilar(currentDraw, lastDraw)) {
+        if (currentDraw.currentDraw === draw.currentDraw) {
             return true;
         }
     }
     return false;
 }
 
-function areSimilar(draw1, draw2) {
-    if (draw1.currentDraw === draw2.currentDraw) {
-        return true;
-    }
-    return false;
+async function hasZeroOneTwo(draw) {
+    const numbers = [
+        draw.currentFirstNumber,
+        draw.currentSecondNumber,
+        draw.currentThirdNumber
+    ];
+    return numbers.includes(0) || numbers.includes(1) || numbers.includes(2);
 }
 
-async function isSimilarSecondThirdNum(currentDraw, lastDrawsDocs) {
-    for (const doc of lastDrawsDocs) {
-        const lastDraw = doc.data();
+async function hasSixSevenEightNine(draw) {
+    const numbers = [
+        draw.currentFirstNumber,
+        draw.currentSecondNumber,
+        draw.currentThirdNumber
+    ];
+    return numbers.includes(6) || numbers.includes(7) || numbers.includes(8) || numbers.includes(9);
+}
 
-        if (areSimilarSecondThirdNum(currentDraw, lastDraw)) {
+
+async function isSimilarFirstTwo(currentDraw, lastDrawsDocs) {
+    for (const draw of lastDrawsDocs) {
+
+        if (currentDraw.firstAndSecondNumber === draw.firstAndSecondNumber) {
             return true;
         }
     }
     return false;
 }
 
-function areSimilarSecondThirdNum(draw1, draw2) {
-    if (draw1.secondAndThirdNumber === draw2.secondAndThirdNumber) {
-        return true;
+
+async function isSimilarToLastFirst(currentDraw, lastDrawsDocs) {
+    for (const draw of lastDrawsDocs) {
+
+        if (currentDraw.currentFirstNumber === draw.currentFirstNumber) {
+            return true;
+        }
+    }
+    return false;
+}
+
+async function isSimilarToSecondThird(currentDraw, lastDrawsDocs) {
+    for (const draw of lastDrawsDocs) {
+
+        if (currentDraw.secondAndThirdNumber === draw.secondAndThirdNumber) {
+            return true;
+        }
     }
     return false;
 }
@@ -69,50 +93,76 @@ const getMonths = () => {
 export async function GET() {
     try {
         const [prevMonth, currentMonth] = getMonths();
-        const drawsCollectionRef = adminDb.firestore().collection('draws')
-            .where('drawMonth', '==', currentMonth)
-            .orderBy('index', 'desc');
+        const firestore = adminDb.firestore();
+        const drawsCollection = firestore
+            .collection("draws")
+            .where("drawMonth", "in", [currentMonth, prevMonth]);
 
-        const snapshot = await drawsCollectionRef.get();
+        const snapshot = await drawsCollection.get();
+        const draws = [];
 
-        // First, set all passCondition to false
-        const batch = adminDb.firestore().batch();
-        snapshot.docs.forEach(doc => {
-            batch.update(doc.ref, { passCondition: false });
+// Loop through the documents and add them to the array
+        snapshot.forEach((doc) => {
+            const drawData = doc.data();
+            drawData.id = doc.id; // Add the document ID to the draw data
+            drawData.monthOrder = drawData.drawMonth === currentMonth ? 1 : 2;  // Assign an artificial order to the months
+            drawData.ref = doc.ref; // **Add the document reference**
+            draws.push(drawData);
+        });
+
+// Sort the combined array by 'monthOrder' and then by 'index'
+        draws.sort((a, b) => {
+            // Sort by 'monthOrder' first
+            if (a.monthOrder < b.monthOrder) {
+                return -1;
+            } else if (a.monthOrder > b.monthOrder) {
+                return 1;
+            } else {
+                // If 'monthOrder' is equal, sort by 'index' in descending order
+                return b.index - a.index;
+            }
+        });
+
+// First, set all passCondition to false
+        const batch = firestore.batch(); // **Assuming you're using the Firestore instance directly**
+        draws.forEach(draw => {
+            if (draw.drawMonth === currentMonth) {
+                batch.update(draw.ref, { passCondition: false });
+            }
         });
         await batch.commit();
 
-
         let total = 0;
-        for (let i = 0; i < snapshot.docs.length; i++) {
-            const doc = snapshot.docs[i];
-            const drawRef = doc.ref;
-            const draw = doc.data();
-            let checksPass = true;
-            let currentToCheckZero = draw.currentFirstNumber;
-            let currentToCheckOne = draw.currentSecondNumber;
-            let currentToCheckTwo = draw.currentThirdNumber;
+        for (let i = 0; i < draws.length; i++) {
+            const draw = draws[i]; // **draw is now the data object with ref**
 
-            // Range checks
-            if (currentToCheckZero > 1) {
-                checksPass = false;
+            // Only process draws from the current month
+            if (draw.drawMonth !== currentMonth) {
+                continue; // Skip draws from the previous month
             }
+
+            let checksPass = true;
 
             // History check
             if (checksPass) {
-                const isSimilar = await isSimilarToLastDraws(draw, snapshot.docs.slice(i + 1, i + 60));
-                const isSimilarST = await isSimilarSecondThirdNum(draw, snapshot.docs.slice(i + 1, i + 10));
-                if (isSimilar || isSimilarST) {
+                const isSimilar = await isSimilarToLastDraws(draw, draws.slice(i + 1, i + 60));
+                const isSimilarFS = await isSimilarFirstTwo(draw, draws.slice(i + 1, i + 60));
+                const isSimilarLF = await isSimilarToLastFirst(draw, draws.slice(i + 1, i + 2));
+                const isSimilarST = await isSimilarToSecondThird(draw, draws.slice(i + 1, i + 10));
+                const hasZeroOneTwoCheck = await hasZeroOneTwo(draw);
+
+                if (isSimilar || isSimilarST || isSimilarLF || isSimilarFS || !hasZeroOneTwoCheck) {
                     checksPass = false;
                 }
             }
 
             if (checksPass) {
                 total += 1;
-                await drawRef.update({ passCondition: true });
-                console.log(`Updated passCondition to true for document ${doc.id}`);
+                await draw.ref.update({ passCondition: true }); // **Use draw.ref to update the document**
+                console.log(`Updated passCondition to true for document ${draw.id}`);
             }
         }
+
 
         console.log(`Total passes: ${total}`);
 

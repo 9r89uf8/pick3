@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchPosts, createPost, createAllPosts, checkPosts } from './services/postService'; // Import the fetchPosts service
 import {createHistory} from "@/app/services/historyService";
+import {analyze60, analyze10K} from "@/app/services/testingService";
 import NumberFrequencyChart from "@/app/components/NumberFrequencyChart";
 import Link from 'next/link';
 import DrawsList from "@/app/components/DrawsList";
@@ -44,7 +45,7 @@ const HomePage = () => {
 
 
   const play = async () => {
-    await playNums();
+    await play();
 
   };
 
@@ -62,6 +63,7 @@ const HomePage = () => {
 
           <Container maxWidth="sm">
             <Item elevation={4}>
+
 
               <PostCreationButtons/>
 

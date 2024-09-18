@@ -9,7 +9,7 @@ const NumbersList = ({ numbers }) => {
                     <div style={{display: "block"}}>
                         {/* Assuming item is an array, join it to display as a string */}
                         <Typography variant="h4" style={{color: 'white'}}>
-                            {item.join(' ')} {/* Adjusted to handle array of numbers */}
+                            {item} {/* Adjusted to handle array of numbers */}
                         </Typography>
                         {/* Example conditional rendering if each item had additional properties */}
                         {item.points && (

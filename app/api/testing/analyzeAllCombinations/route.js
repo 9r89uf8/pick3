@@ -16,15 +16,14 @@ async function isSimilarToLastDraws(currentDraw, lastDrawsDocs) {
     return false;
 }
 
-async function isSimilarFirstThree(currentDraw, lastDrawsDocs) {
-    for (const draw of lastDrawsDocs) {
-
-        if (currentDraw === draw.firstSecondThird) {
-            return true;
-        }
-    }
-    return false;
+function containsZeroOneTwo(draw) {
+    return draw.includes('0') || draw.includes('1') || draw.includes('2');
 }
+
+function containsSixSevenEightNine(draw) {
+    return draw.includes('6') || draw.includes('7') || draw.includes('8') || draw.includes('9');
+}
+
 
 async function isSimilarFirstTwo(currentDraw, lastDrawsDocs) {
     for (const draw of lastDrawsDocs) {
@@ -36,15 +35,6 @@ async function isSimilarFirstTwo(currentDraw, lastDrawsDocs) {
     return false;
 }
 
-async function isSimilarLastTwo(currentDraw, lastDrawsDocs) {
-    for (const draw of lastDrawsDocs) {
-
-        if (currentDraw === draw.thirdAndFourthNumber) {
-            return true;
-        }
-    }
-    return false;
-}
 
 async function isSimilarToLastFirst(currentDraw, lastDrawsDocs) {
     for (const draw of lastDrawsDocs) {
@@ -76,21 +66,17 @@ async function checkAllCombinations(draws) {
 
     // Initialize counters for each condition that wasn't met
     let isSimilarFailCount = 0;
-    let isSimilarFSTFailCount = 0;
     let isSimilarFSFailCount = 0;
     let isSimilarLFFailCount = 0;
     let isSimilarTFFailCount = 0;
     let isSimilarSTFailCount = 0;
+    let hasZeroOneTwoPassCount = 0;
 
     // Generate all combinations from '0000' to '9999'
-    for (let i = 0; i < 10000; i++) {
+    for (let i = 0; i < 1000; i++) {
         // Convert the current number to a 4-digit string with leading zeros
-        let currentDraw = i.toString().padStart(4, '0');
+        let currentDraw = i.toString().padStart(3, '0');
 
-        // Exclude combinations with 3 or more repeating digits
-        if (hasThreeOrMoreRepeatingDigits(currentDraw)) {
-            continue; // Skip this combination
-        }
 
         // Extract the first digit
         let firstNumber = currentDraw.charAt(0);
@@ -98,10 +84,6 @@ async function checkAllCombinations(draws) {
         // Extract the first two digits
         let firstTwoNumbers = currentDraw.substring(0, 2);
 
-        let thirdAndFourthNumbers = currentDraw.substring(2, 4);
-
-        // Extract the first three digits
-        let firstThreeNumbers = currentDraw.substring(0, 3);
 
         let secondAndThirdNumbers = currentDraw.substring(1, 3);
 
@@ -111,18 +93,15 @@ async function checkAllCombinations(draws) {
 
         // Now you can use these variables in your condition functions
         const isSimilar = await isSimilarToLastDraws(currentDraw, first60Draws);
-        const isSimilarFST = await isSimilarFirstThree(firstThreeNumbers, first60Draws);
         const isSimilarFS = await isSimilarFirstTwo(firstTwoNumbers, first60Draws);
         const isSimilarLF = await isSimilarToLastFirst(firstNumber, first4Draws);
-        const isSimilarLT = await isSimilarLastTwo(thirdAndFourthNumbers, first60Draws);
-        const isSimilarST = await isSimilarToSecondThird(secondAndThirdNumbers, first60Draws);
+        const isSimilarST = await isSimilarToSecondThird(secondAndThirdNumbers, filteredDraws.slice(0, 10));
+        const hasZeroOneTwoCheck = await containsZeroOneTwo(currentDraw)
+        const hasSixSevenEightNineCheck = await containsSixSevenEightNine(currentDraw)
 
         // Check and increment fail counts for each condition
         if (isSimilar) {
             isSimilarFailCount += 1;
-        }
-        if (isSimilarFST) {
-            isSimilarFSTFailCount += 1;
         }
         if (isSimilarFS) {
             isSimilarFSFailCount += 1;
@@ -130,15 +109,17 @@ async function checkAllCombinations(draws) {
         if (isSimilarLF) {
             isSimilarLFFailCount += 1;
         }
-        if(isSimilarLT){
-            isSimilarTFFailCount += 1;
-        }
+
         if(isSimilarST){
             isSimilarSTFailCount += 1;
         }
 
+        if(hasZeroOneTwoCheck){
+            hasZeroOneTwoPassCount += 1;
+        }
+
         // Determine if the combination passes all conditions
-        if (!isSimilar && !isSimilarFST && !isSimilarFS && !isSimilarLF && !isSimilarLT && !isSimilarST) {
+        if (!isSimilar && !isSimilarFS && !isSimilarLF && !isSimilarST && hasZeroOneTwoCheck) {
             pass += 1;
             // Optionally log passing combinations
             // console.log(`Pass: ${currentDraw}`);
@@ -154,39 +135,13 @@ async function checkAllCombinations(draws) {
         pass,
         fail,
         isSimilarFailCount,
-        isSimilarFSTFailCount,
         isSimilarFSFailCount,
         isSimilarLFFailCount,
         isSimilarTFFailCount,
-        isSimilarSTFailCount
+        isSimilarSTFailCount,
+        hasZeroOneTwoPassCount
     };
 }
-
-// Function to check if a combination has 3 or more repeating digits
-function hasThreeOrMoreRepeatingDigits(draw) {
-    // Create an object to count occurrences of each digit
-    const digitCounts = {};
-
-    // Iterate over each digit in the draw
-    for (let digit of draw) {
-        if (digitCounts[digit]) {
-            digitCounts[digit] += 1;
-        } else {
-            digitCounts[digit] = 1;
-        }
-    }
-
-    // Check if any digit occurs 3 or more times
-    for (let count of Object.values(digitCounts)) {
-        if (count >= 3) {
-            return true; // Combination has 3 or more repeating digits
-        }
-    }
-
-    return false; // Combination does not have 3 or more repeating digits
-}
-
-
 
 
 

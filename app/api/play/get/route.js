@@ -1,31 +1,11 @@
 // app/api/posts/route.js
+import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/app/utils/firebaseAdmin';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-function generateNumberArray() {
-    // Generate the first number between 0 and 1
-    let firstNumber = Math.floor(Math.random() * 2);
 
-    // Generate the second number between 2 and 9
-    let secondNumber = Math.floor(Math.random() * 8) + 2;
 
-    // Generate the third number between 2 and 9, different from secondNumber
-    let thirdNumber;
-    do {
-        thirdNumber = Math.floor(Math.random() * 8) + 2;
-    } while (thirdNumber === secondNumber);
-
-    // Ensure that secondNumber is less than thirdNumber
-    if (secondNumber > thirdNumber) {
-        // Swap the values if secondNumber is greater than thirdNumber
-        let temp = secondNumber;
-        secondNumber = thirdNumber;
-        thirdNumber = temp;
-    }
-
-    return [firstNumber, secondNumber, thirdNumber];
-}
 const getMonths = () => {
     const currentDate = new Date();
     const currentMonthIndex = currentDate.getMonth(); // 0-11 (January is 0, December is 11)
@@ -49,20 +29,61 @@ const getMonths = () => {
     return [monthNames[previousMonthIndex], monthNames[currentMonthIndex], monthNames[twoMonthsAgoIndex]];
 };
 
+async function isSimilarToLastDraws(currentDraw, lastDrawsDocs) {
+    for (const draw of lastDrawsDocs) {
+        if (currentDraw.currentDraw === draw.currentDraw) {
+            return true;
+        }
+    }
+    return false;
+}
+
+async function hasZeroOneTwo(draw) {
+    const numbers = [
+        draw.currentFirstNumber,
+        draw.currentSecondNumber,
+        draw.currentThirdNumber
+    ];
+    return numbers.includes(0) || numbers.includes(1) || numbers.includes(2);
+}
+
+async function isSimilarFirstTwo(currentDraw, lastDrawsDocs) {
+    for (const draw of lastDrawsDocs) {
+        if (currentDraw.firstAndSecondNumber === draw.firstAndSecondNumber) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+async function isSimilarToLastFirst(currentDraw, lastDrawsDocs) {
+    for (const draw of lastDrawsDocs) {
+        if (currentDraw.currentFirstNumber === draw.currentFirstNumber) {
+            return true;
+        }
+    }
+    return false;
+}
+
+async function isSimilarToSecondThird(currentDraw, lastDrawsDocs) {
+    for (const draw of lastDrawsDocs) {
+        if (currentDraw.secondAndThirdNumber === draw.secondAndThirdNumber) {
+            return true;
+        }
+    }
+    return false;
+}
 
 export async function GET() {
     try {
-
         const [prevMonth, currentMonth] = getMonths();
         const firestore = adminDb.firestore();
 
-        // Query for both July and June
+        // Query for both currentMonth and prevMonth
         const drawsCollection = firestore
             .collection("draws")
             .where("drawMonth", "in", [currentMonth, prevMonth]);
-        //                                                 [first, second]
-
-        // ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
         const snapshot = await drawsCollection.get();
         const draws = [];
@@ -71,11 +92,13 @@ export async function GET() {
         snapshot.forEach((doc) => {
             const drawData = doc.data();
             drawData.id = doc.id; // Add the document ID to the draw data
-            drawData.monthOrder = drawData.drawMonth === currentMonth ? 1 : 2;  // Assign an artificial order to the months
+            drawData.monthOrder = drawData.drawMonth === currentMonth ? 1 : 2; // Assign an artificial order to the months
+
+
             draws.push(drawData);
         });
 
-// Sort the combined array by 'monthOrder' and then by 'index'
+        // Sort the combined array by 'monthOrder' and then by 'index'
         draws.sort((a, b) => {
             // Sort by 'monthOrder' first
             if (a.monthOrder < b.monthOrder) {
@@ -88,64 +111,62 @@ export async function GET() {
             }
         });
 
-
-
-        // Assuming getX is a synchronous function. If it's asynchronous, you'd need to use await inside the loop.
-        let finalDraws = [];
-
-        function arrayExistsInFinalDraws(arr, finalDraws) {
-            const arrString = JSON.stringify(arr);
-            return finalDraws.some(draw => JSON.stringify(draw) === arrString);
-        }
-
-
-        // Function to check if a draw result is similar to any in the last 60 draws
-        function isUniqueInLast50Draws(draw, draws) {
-            let endPosition = Math.min(60, draws.length);
-            for (let j = 0; j < endPosition; j++) {
-                if (`${draw[0]}${draw[1]}${draw[2]}` === draws[j].currentDraw) {
-                    console.log('-----------------------------------')
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        // Function to check if a draw result is similar to any in the last 10 draws
-        function similarSecondAndThird(draw, draws) {
-            let endPosition = Math.min(10, draws.length);
-            for (let j = 0; j < endPosition; j++) {
-                if (`${draw[1]}${draw[2]}` === draws[j].secondAndThirdNumber) {
-                    console.log('++++++++++++++++++++++++++++++++++++++=')
-                    return false;
-                }
-            }
-            return true;
-        }
-
-
+        // Initialize combinations array
+        const combinations = [];
         let attempts = 0;
-        const maxAttempts = 1000; // Limit the number of attempts to prevent infinite loop
+        const maxAttempts = 100
 
-        while (finalDraws.length < 10 && attempts < maxAttempts) {
-            let result = generateNumberArray(draws.slice(0, 60));
+// While combinations.length < 9 and attempts < maxAttempts
+        while (combinations.length < 9 && attempts < maxAttempts) {
+            attempts++;
 
-            if (isUniqueInLast50Draws(result, draws)&&!arrayExistsInFinalDraws(result, finalDraws)&&similarSecondAndThird(result, draws)) {
-                finalDraws.push(result);
+            // Generate 4 random digits from 0-9
+            const digits = [];
+            for (let i = 0; i < 3; i++) {
+                digits.push(Math.floor(Math.random() * 10));
             }
 
-            attempts++;
+            const currentDraw = {
+                currentDraw: digits.join(''),
+                currentFirstNumber: digits[0],
+                currentSecondNumber: digits[1],
+                currentThirdNumber: digits[2],
+                firstAndSecondNumber: digits[0] + digits[1],
+                secondAndThirdNumber: digits[1] + digits[2]
+            };
+
+
+
+            // Now check the conditions
+            const isSimilar = await isSimilarToLastDraws(currentDraw, draws.slice(0, 60));
+            const isSimilarFS = await isSimilarFirstTwo(currentDraw, draws.slice(0, 60));
+            const isSimilarLF = await isSimilarToLastFirst(currentDraw, draws.slice(0, 2));
+            const isSimilarST = await isSimilarToSecondThird(currentDraw, draws.slice(0, 10));
+            const hasZeroOneTwoCheck = await hasZeroOneTwo(currentDraw)
+
+            if (
+                !isSimilar &&
+                !isSimilarFS &&
+                !isSimilarLF &&
+                !isSimilarST &&
+                hasZeroOneTwoCheck
+            ) {
+                // The combination fails all conditions
+                combinations.push(currentDraw.currentDraw);
+            }
+            // If conditions are met, continue looping
         }
 
-
-        return new Response(JSON.stringify(finalDraws), {
+        // Return the combinations array as JSON
+        return new Response(JSON.stringify(combinations ), {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': 'no-store, max-age=0'
+                'Cache-Control': 'no-store, max-age=0',
             },
         });
     } catch (error) {
+        console.log(error.message);
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' },
