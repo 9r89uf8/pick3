@@ -65,7 +65,7 @@ const HomePage = () => {
 
   return (
 
-      <div>
+      <Box sx={{ width: '100%' }}>
 
           <Container maxWidth="sm">
             <Item elevation={4}>
@@ -171,7 +171,7 @@ const HomePage = () => {
         ) : (
             <p>No posts available</p>
         )}
-      </div>
+      </Box>
   );
 };
 
