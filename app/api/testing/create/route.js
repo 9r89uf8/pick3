@@ -12,7 +12,9 @@ export async function GET(req) {
 
         console.log('creating')
         let firstPicks = [];
-        let previousPick = [null, null, null];
+        let previousPick1 = [null, null, null];
+        let previousPick2 = [null, null, null];
+        let previousPick3 = [null, null, null];
 
         console.log('Connecting to Scraping Browser...');
         const browser = await puppeteer.connect({
@@ -44,7 +46,7 @@ export async function GET(req) {
 
                 for (let i = 0; i < divsWithClassDfs.length; i++) {
                     const { dateInfo, drawInfo, pick } = divsWithClassDfs[i];
-                    if (dateInfo.substring(0, 3) === 'Sep') {
+                    if (dateInfo.substring(0, 3) === 'Oct') {
                         let [firstNumber = null, secondNumber = null, thirdNumber = null] = pick;
 
                         let r = parseInt(dateInfo.match(/\d+/)?.[0])
@@ -55,12 +57,92 @@ export async function GET(req) {
                             r = (r * 2) + 1
                         }
 
-                        // Putting the numbers into an array
-                        // Sorting the array
-                        // numbers.sort((a, b) => a - b);
-
                         // Destructuring the sorted array back into variables
                         [firstNumber, secondNumber, thirdNumber] = [firstNumber, secondNumber, thirdNumber];
+
+                        let movementFirst1 = '';
+                        let movementFirst2 = '';
+                        let movementFirst3 = '';
+
+                        let movementSecond1 = '';
+                        let movementSecond2 = '';
+                        let movementSecond3 = '';
+
+                        let movementThird1 = '';
+                        let movementThird2 = '';
+                        let movementThird3 = '';
+
+                        if (firstNumber > previousPick1[0]) {
+                            movementFirst1 = 'Up';
+                        } else if (firstNumber < previousPick1[0]) {
+                            movementFirst1 = 'Down';
+                        } else {
+                            movementFirst1 = 'Equal';
+                        }
+
+                        if (previousPick1[0] > previousPick2[0]) {
+                            movementFirst2 = 'Up';
+                        } else if (previousPick1[0] < previousPick2[0]) {
+                            movementFirst2 = 'Down';
+                        } else {
+                            movementFirst2 = 'Equal';
+                        }
+
+                        if (previousPick2[0] > previousPick3[0]) {
+                            movementFirst3 = 'Up';
+                        } else if (previousPick2[0] < previousPick3[0]) {
+                            movementFirst3 = 'Down';
+                        } else {
+                            movementFirst3 = 'Equal';
+                        }
+
+                        if (secondNumber > previousPick1[1]) {
+                            movementSecond1 = 'Up';
+                        } else if (secondNumber < previousPick1[1]) {
+                            movementSecond1 = 'Down';
+                        } else {
+                            movementSecond1 = 'Equal';
+                        }
+
+                        if (previousPick1[1] > previousPick2[1]) {
+                            movementSecond2 = 'Up';
+                        } else if (previousPick1[1] < previousPick2[1]) {
+                            movementSecond2 = 'Down';
+                        } else {
+                            movementSecond2 = 'Equal';
+                        }
+
+                        if (previousPick2[1] > previousPick3[1]) {
+                            movementSecond3 = 'Up';
+                        } else if (previousPick2[1] < previousPick3[1]) {
+                            movementSecond3 = 'Down';
+                        } else {
+                            movementSecond3 = 'Equal';
+                        }
+
+                        if (thirdNumber > previousPick1[2]) {
+                            movementThird1 = 'Up';
+                        } else if (thirdNumber < previousPick1[2]) {
+                            movementThird1 = 'Down';
+                        } else {
+                            movementThird1 = 'Equal';
+                        }
+
+                        if (previousPick1[2] > previousPick2[2]) {
+                            movementThird2 = 'Up';
+                        } else if (previousPick1[2] < previousPick2[2]) {
+                            movementThird2 = 'Down';
+                        } else {
+                            movementThird2 = 'Equal';
+                        }
+
+                        if (previousPick2[2] > previousPick3[2]) {
+                            movementThird3 = 'Up';
+                        } else if (previousPick2[2] < previousPick3[2]) {
+                            movementThird3 = 'Down';
+                        } else {
+                            movementThird3 = 'Equal';
+                        }
 
 
                         firstPicks.push({
@@ -76,10 +158,35 @@ export async function GET(req) {
                             drawMonth: dateInfo.substring(0, 3),
                             index: r,
                             time: drawInfo.replace(/[^a-zA-Z]+/g, ""),
-                            timestamp: adminDb.firestore.Timestamp.now()
+                            timestamp: adminDb.firestore.Timestamp.now(),
+
+                            secondNumberMovement: movementSecond1,
+                            previousSecondNumberMovement1: movementSecond2,
+                            previousSecondNumberMovement2: movementSecond3,
+
+                            firstNumberMovement: movementFirst1,
+                            previousFirstNumberMovement1: movementFirst2,
+                            previousFirstNumberMovement2: movementFirst3,
+
+                            thirdNumberMovement: movementThird1,
+                            previousThirdNumberMovement1: movementThird2,
+                            previousThirdNumberMovement2: movementThird3,
+
+                            previousFirstNumber1: previousPick1[0],
+                            previousFirstNumber2: previousPick2[0],
+                            previousFirstNumber3: previousPick3[0],
+                            previousSecondNumber1: previousPick1[1],
+                            previousSecondNumber2: previousPick2[1],
+                            previousSecondNumber3: previousPick3[1],
+                            previousThirdNumber1: previousPick1[2],
+                            previousThirdNumber2: previousPick2[2],
+                            previousThirdNumber3: previousPick3[2],
+
                         });
 
-                        previousPick = [firstNumber, secondNumber, thirdNumber];
+                        previousPick3 = [...previousPick2];
+                        previousPick2 = [...previousPick1];
+                        previousPick1 = [firstNumber, secondNumber, thirdNumber];
                     }
                 }
             }

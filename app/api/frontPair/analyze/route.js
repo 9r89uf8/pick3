@@ -13,7 +13,7 @@ async function hasZeroOneTwo(draw) {
         draw.currentFirstNumber,
         draw.currentSecondNumber
     ];
-    return numbers.includes(0) || numbers.includes(1);
+    return numbers.includes(0) || numbers.includes(9);
 }
 
 
@@ -53,7 +53,7 @@ async function analyzeMovements(draws) {
 
     for (let i = 1; i < filteredDraws.length; i++) {
         let currentDraw = filteredDraws[i];
-        const isSimilarFS = await isSimilarFirstTwo(currentDraw, draws.slice(i + 1, i + 20));
+        const isSimilarFS = await isSimilarFirstTwo(currentDraw, draws.slice(i + 1, i + 80));
         const isSimilarLF = await isSimilarToLastFirst(currentDraw, draws.slice(i + 1, i + 2));
         const hasZeroOneTwoCheck = await hasZeroOneTwo(currentDraw)
 
@@ -69,7 +69,7 @@ async function analyzeMovements(draws) {
         }
 
 
-        if (!isSimilarFS && hasZeroOneTwoCheck) {
+        if (!isSimilarFS) {
             pass += 1;
         } else {
             fail += 1;

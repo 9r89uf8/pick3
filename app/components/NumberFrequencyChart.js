@@ -21,7 +21,7 @@ import {
     Tooltip,
     ResponsiveContainer,
 } from 'recharts';
-import {createHistory} from "@/app/services/historyService";
+import {createHistory, createDisplay} from "@/app/services/historyService";
 
 // Define month names and helper functions before the component
 const monthNames = [
@@ -59,7 +59,7 @@ const NumberFrequencyChart = () => {
     }, [selectedMonth]);
 
     const update = async () => {
-        await createHistory()
+        await createDisplay()
 
     };
 

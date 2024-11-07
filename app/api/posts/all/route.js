@@ -5,61 +5,49 @@ import { adminDb } from '@/app/utils/firebaseAdmin';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const getMonths = () => {
+const getMonths = (n) => {
     const currentDate = new Date();
     const currentMonthIndex = currentDate.getMonth(); // 0-11 (January is 0, December is 11)
-
-    let twoMonthsAgoIndex;
-    let previousMonthIndex;
-
-    if (currentMonthIndex === 0) {  // January
-        twoMonthsAgoIndex = 10;     // November of the previous year
-        previousMonthIndex = 11;    // December of the previous year
-    } else if (currentMonthIndex === 1) {  // February
-        twoMonthsAgoIndex = 11;     // December of the previous year
-        previousMonthIndex = 0;     // January
-    } else {
-        twoMonthsAgoIndex = currentMonthIndex - 2;
-        previousMonthIndex = currentMonthIndex - 1;
-    }
-
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    return [monthNames[previousMonthIndex], monthNames[currentMonthIndex], monthNames[twoMonthsAgoIndex]];
+    const months = [];
+    for (let i = 0; i < n; i++) {
+        // Calculate the month index for i months ago
+        let monthIndex = (currentMonthIndex - i + 12) % 12;
+        months.push(monthNames[monthIndex]);
+    }
+    return months; // Months are in reverse chronological order
 };
+
 
 
 export async function GET() {
     try {
-        // const firstSnapshot = await admin.firestore().collection('firstPicks').where("drawMonth", "==", "Jul").orderBy('index', 'desc').get();
-        // const first = firstSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const [prevMonth, currentMonth] = getMonths();
+        const months = getMonths(5); // Get the current month and the previous 4 months
+        console.log(months)
         const firestore = adminDb.firestore();
 
-// Query for both July and June
+        // Query for the specified months
         const drawsCollection = firestore
             .collection("draws")
-            .where("drawMonth", "in", [currentMonth, prevMonth]);
+            .where("drawMonth", "in", months);
 
         const snapshot = await drawsCollection.get();
         const draws = [];
 
-// Loop through the documents and add them to the array
+        // Assign an order to each month based on its position in the months array
         snapshot.forEach((doc) => {
             const drawData = doc.data();
             drawData.id = doc.id; // Add the document ID to the draw data
-            drawData.monthOrder = drawData.drawMonth === currentMonth ? 1 : 2;  // Assign an artificial order to the months
+            drawData.monthOrder = months.indexOf(drawData.drawMonth); // 0 for current month
             draws.push(drawData);
         });
 
-
-// Sort the combined array by 'monthOrder' and then by 'index'
+        // Sort the combined array by 'monthOrder' and then by 'index'
         draws.sort((a, b) => {
-            // Sort by 'monthOrder' first
-            if (a.monthOrder < b.monthOrder) {
-                return -1;
-            } else if (a.monthOrder > b.monthOrder) {
-                return 1;
+            // Sort by 'monthOrder' first (ascending order)
+            if (a.monthOrder !== b.monthOrder) {
+                return a.monthOrder - b.monthOrder;
             } else {
                 // If 'monthOrder' is equal, sort by 'index' in descending order
                 return b.index - a.index;

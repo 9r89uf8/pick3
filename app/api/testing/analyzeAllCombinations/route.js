@@ -35,6 +35,15 @@ async function isSimilarFirstTwo(currentDraw, lastDrawsDocs) {
     return false;
 }
 
+async function isSimilarFirstThird(currentDraw, lastDrawsDocs) {
+    for (const draw of lastDrawsDocs) {
+        if (currentDraw === draw.firstAndThirdNumber) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 async function isSimilarToLastFirst(currentDraw, lastDrawsDocs) {
     for (const draw of lastDrawsDocs) {
@@ -58,8 +67,6 @@ async function isSimilarToSecondThird(currentDraw, lastDrawsDocs) {
 
 
 async function checkAllCombinations(draws) {
-    // Filter the draws where monthOrder === 1
-    const filteredDraws = draws.filter(draw => draw.monthOrder === 1);
 
     let pass = 0;
     let fail = 0;
@@ -67,10 +74,8 @@ async function checkAllCombinations(draws) {
     // Initialize counters for each condition that wasn't met
     let isSimilarFailCount = 0;
     let isSimilarFSFailCount = 0;
-    let isSimilarLFFailCount = 0;
-    let isSimilarTFFailCount = 0;
+    let isSimilarFTFailCount = 0;
     let isSimilarSTFailCount = 0;
-    let hasZeroOneTwoPassCount = 0;
 
     // Generate all combinations from '0000' to '9999'
     for (let i = 0; i < 1000; i++) {
@@ -81,23 +86,24 @@ async function checkAllCombinations(draws) {
         // Extract the first digit
         let firstNumber = currentDraw.charAt(0);
 
+        // Extract the third digit
+        let thirdNumber = currentDraw.charAt(2);
+
         // Extract the first two digits
         let firstTwoNumbers = currentDraw.substring(0, 2);
+
+        let firstAndThirdNumbers = firstNumber + thirdNumber;
 
 
         let secondAndThirdNumbers = currentDraw.substring(1, 3);
 
-        // Get the first 60 and first 4 draws from filteredDraws
-        const first60Draws = filteredDraws.slice(0, 60);
-        const first4Draws = filteredDraws.slice(0, 2);
 
         // Now you can use these variables in your condition functions
-        const isSimilar = await isSimilarToLastDraws(currentDraw, first60Draws);
-        const isSimilarFS = await isSimilarFirstTwo(firstTwoNumbers, first60Draws);
-        const isSimilarLF = await isSimilarToLastFirst(firstNumber, first4Draws);
-        const isSimilarST = await isSimilarToSecondThird(secondAndThirdNumbers, filteredDraws.slice(0, 10));
-        const hasZeroOneTwoCheck = await containsZeroOneTwo(currentDraw)
-        const hasSixSevenEightNineCheck = await containsSixSevenEightNine(currentDraw)
+        const isSimilar = await isSimilarToLastDraws(currentDraw, draws.slice(0, 140));
+        const isSimilarFS = await isSimilarFirstTwo(firstTwoNumbers, draws.slice(0, 15));
+        const isSimilarFT = await isSimilarFirstThird(firstAndThirdNumbers, draws.slice(0, 12));
+        const isSimilarST = await isSimilarToSecondThird(secondAndThirdNumbers, draws.slice(0, 12));
+
 
         // Check and increment fail counts for each condition
         if (isSimilar) {
@@ -106,20 +112,18 @@ async function checkAllCombinations(draws) {
         if (isSimilarFS) {
             isSimilarFSFailCount += 1;
         }
-        if (isSimilarLF) {
-            isSimilarLFFailCount += 1;
+
+        if(isSimilarFT){
+            isSimilarFTFailCount += 1;
         }
 
         if(isSimilarST){
             isSimilarSTFailCount += 1;
         }
 
-        if(hasZeroOneTwoCheck){
-            hasZeroOneTwoPassCount += 1;
-        }
 
         // Determine if the combination passes all conditions
-        if (!isSimilar && !isSimilarFS && !isSimilarLF && !isSimilarST && hasZeroOneTwoCheck) {
+        if (!isSimilar && !isSimilarFS && !isSimilarST && !isSimilarFT) {
             pass += 1;
             // Optionally log passing combinations
             // console.log(`Pass: ${currentDraw}`);
@@ -136,72 +140,55 @@ async function checkAllCombinations(draws) {
         fail,
         isSimilarFailCount,
         isSimilarFSFailCount,
-        isSimilarLFFailCount,
-        isSimilarTFFailCount,
         isSimilarSTFailCount,
-        hasZeroOneTwoPassCount
+        isSimilarFTFailCount
     };
 }
 
 
 
-const getMonths = () => {
+const getMonths = (n) => {
     const currentDate = new Date();
     const currentMonthIndex = currentDate.getMonth(); // 0-11 (January is 0, December is 11)
-
-    let twoMonthsAgoIndex;
-    let previousMonthIndex;
-
-    if (currentMonthIndex === 0) {  // January
-        twoMonthsAgoIndex = 10;     // November of the previous year
-        previousMonthIndex = 11;    // December of the previous year
-    } else if (currentMonthIndex === 1) {  // February
-        twoMonthsAgoIndex = 11;     // December of the previous year
-        previousMonthIndex = 0;     // January
-    } else {
-        twoMonthsAgoIndex = currentMonthIndex - 2;
-        previousMonthIndex = currentMonthIndex - 1;
-    }
-
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    return [monthNames[previousMonthIndex], monthNames[currentMonthIndex], monthNames[twoMonthsAgoIndex]];
+    const months = [];
+    for (let i = 0; i < n; i++) {
+        // Calculate the month index for i months ago
+        let monthIndex = (currentMonthIndex - i + 12) % 12;
+        months.push(monthNames[monthIndex]);
+    }
+    return months; // Months are in reverse chronological order
 };
 
 
 export async function GET() {
     try {
-        // const firstSnapshot = await admin.firestore().collection('firstPicks').where("drawMonth", "==", "Jul").orderBy('index', 'desc').get();
-        // const first = firstSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        // const [prevMonth, currentMonth] = getMonths();
-        let currentMonth = 'Aug'
-        let prevMonth = 'Jul'
+        let months = ['Aug', 'Jul', 'Jun' ]
+        // const months = getMonths(5); // Get the current month and the previous 4 months
         const firestore = adminDb.firestore();
 
-// Query for both July and June
+        // Query for the specified months
         const drawsCollection = firestore
             .collection("draws")
-            .where("drawMonth", "in", [currentMonth, prevMonth]);
+            .where("drawMonth", "in", months);
 
         const snapshot = await drawsCollection.get();
         const draws = [];
 
-// Loop through the documents and add them to the array
+        // Assign an order to each month based on its position in the months array
         snapshot.forEach((doc) => {
             const drawData = doc.data();
             drawData.id = doc.id; // Add the document ID to the draw data
-            drawData.monthOrder = drawData.drawMonth === currentMonth ? 1 : 2;  // Assign an artificial order to the months
+            drawData.monthOrder = months.indexOf(drawData.drawMonth); // 0 for current month
             draws.push(drawData);
         });
 
-
-// Sort the combined array by 'monthOrder' and then by 'index'
+        // Sort the combined array by 'monthOrder' and then by 'index'
         draws.sort((a, b) => {
-            // Sort by 'monthOrder' first
-            if (a.monthOrder < b.monthOrder) {
-                return -1;
-            } else if (a.monthOrder > b.monthOrder) {
-                return 1;
+            // Sort by 'monthOrder' first (ascending order)
+            if (a.monthOrder !== b.monthOrder) {
+                return a.monthOrder - b.monthOrder;
             } else {
                 // If 'monthOrder' is equal, sort by 'index' in descending order
                 return b.index - a.index;

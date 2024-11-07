@@ -1,116 +1,33 @@
 // app/api/posts/route.js
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/app/utils/firebaseAdmin';
+import {azAZ} from "@mui/material/locale";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 
-function containsZeroOneTwo(draw) {
-    return draw.includes('0') || draw.includes('1');
-}
-
-
-
-async function isSimilarFirstTwo(currentDraw, lastDrawsDocs) {
-    for (const draw of lastDrawsDocs) {
-
-        if (currentDraw === draw.firstAndSecondNumber) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-async function isSimilarToLastFirst(currentDraw, lastDrawsDocs) {
-    for (const draw of lastDrawsDocs) {
-        if (currentDraw === draw.currentFirstNumber.toString()) {
-            return true;
-        }
-    }
-    return false;
-}
-
-
-
-async function checkAllCombinations(draws) {
-    // Filter the draws where monthOrder === 1
+function analyzeMovements(draws) {
     const filteredDraws = draws.filter(draw => draw.monthOrder === 1);
-
-    let pass = 0;
-    let fail = 0;
-
-    // Initialize counters for each condition that wasn't met
-    let isSimilarFailCount = 0;
-    let isSimilarFSFailCount = 0;
-    let isSimilarLFFailCount = 0;
-    let isSimilarTFFailCount = 0;
-    let isSimilarSTFailCount = 0;
-    let hasZeroOneTwoPassCount = 0;
-
-    // Generate all combinations from '0000' to '9999'
-    for (let i = 0; i < 100; i++) {
-        // Convert the current number to a 4-digit string with leading zeros
-        let currentDraw = i.toString().padStart(2, '0');
+    let numberFrequency = {};
+    let numberFrequencySecond = {};
 
 
-        // Extract the first digit
-        let firstNumber = currentDraw.charAt(0);
+    for (let i = 1; i < filteredDraws.length; i++) {
+        let currentDraw = filteredDraws[i];
+        let currentFirstNumber = currentDraw.currentFirstNumber;
+        let currentSecondNumber = currentDraw.currentSecondNumber;
 
-        // Extract the first two digits
-        let firstTwoNumbers = currentDraw.substring(0, 2);
+        numberFrequency[currentFirstNumber] = (numberFrequency[currentFirstNumber] || 0) + 1;
+        numberFrequencySecond[currentSecondNumber] = (numberFrequencySecond[currentSecondNumber] || 0) + 1;
 
-
-        let secondAndThirdNumbers = currentDraw.substring(1, 3);
-
-        // Get the first 60 and first 4 draws from filteredDraws
-        const first60Draws = filteredDraws.slice(0, 60);
-        const first4Draws = filteredDraws.slice(0, 1);
-
-        // Now you can use these variables in your condition functions
-        const isSimilarFS = await isSimilarFirstTwo(firstTwoNumbers, filteredDraws.slice(0, 60));
-        const isSimilarLF = await isSimilarToLastFirst(firstNumber, first4Draws);
-        const hasZeroOneTwoCheck = await containsZeroOneTwo(currentDraw)
-
-        // Check and increment fail counts for each condition
-        if (isSimilarFS) {
-            isSimilarFSFailCount += 1;
-        }
-        if (isSimilarLF) {
-            isSimilarLFFailCount += 1;
-        }
-
-        if(hasZeroOneTwoCheck){
-            hasZeroOneTwoPassCount += 1;
-        }
-
-        // Determine if the combination passes all conditions
-        if (!isSimilarFS) {
-            console.log(currentDraw)
-            pass += 1;
-            // Optionally log passing combinations
-            // console.log(`Pass: ${currentDraw}`);
-        } else {
-            fail += 1;
-            // Optionally log failing combinations
-            // console.log(`Fail: ${currentDraw}`);
-        }
     }
 
-    // Return the counts, including individual condition fail counts
     return {
-        pass,
-        fail,
-        isSimilarFailCount,
-        isSimilarFSFailCount,
-        isSimilarLFFailCount,
-        isSimilarTFFailCount,
-        isSimilarSTFailCount,
-        hasZeroOneTwoPassCount
+        numberFrequency: numberFrequency,
+        numberFrequencySecond: numberFrequencySecond,
     };
 }
-
 
 
 const getMonths = () => {
@@ -142,8 +59,8 @@ export async function GET() {
         // const firstSnapshot = await admin.firestore().collection('firstPicks').where("drawMonth", "==", "Jul").orderBy('index', 'desc').get();
         // const first = firstSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         // const [prevMonth, currentMonth] = getMonths();
-        let currentMonth = 'Aug'
-        let prevMonth = 'Jul'
+        let currentMonth = 'Jul'
+        let prevMonth = 'Jun'
         const firestore = adminDb.firestore();
 
 // Query for both July and June
@@ -177,8 +94,7 @@ export async function GET() {
         });
 
         console.log(`draws length: ${draws.length}`)
-        // const result = await analyzeMovements(draws)
-        const result = await checkAllCombinations(draws)
+        const result = analyzeMovements(draws)
         console.log(result)
         return new Response(JSON.stringify(draws), {
             status: 200,

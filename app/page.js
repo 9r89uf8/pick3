@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchPosts, createPost, createAllPosts, checkPosts } from './services/postService'; // Import the fetchPosts service
 import {createHistory} from "@/app/services/historyService";
-import {analyze60, analyze10K} from "@/app/services/testingService";
+import {analyze60, analyze10K, gatherIntel} from "@/app/services/testingService";
 import NumberFrequencyChart from "@/app/components/NumberFrequencyChart";
 import Link from 'next/link';
 import DrawsList from "@/app/components/DrawsList";
@@ -14,6 +14,7 @@ import { useStore } from '@/app/store/store';
 import {playNums} from "@/app/services/playService";
 import NumbersList from "@/app/components/NumbersList";
 import PostCreationButtons from "@/app/components/PostCreationButtons";
+import DisplayData from "@/app/components/DisplayData";
 
 const Item = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,
@@ -45,7 +46,12 @@ const HomePage = () => {
 
 
   const play = async () => {
-    await playNums();
+    await analyze60();
+
+  };
+
+  const playTwo = async () => {
+    await analyze10K();
 
   };
 
@@ -91,7 +97,25 @@ const HomePage = () => {
 
               </div>
 
-              {numbers&&numbers.length<=0&&
+              <div>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    size='large'
+                    style={{marginTop: 12}}
+                    onClick={() => playTwo()}
+                    sx={{
+                      background: 'linear-gradient(to right, #ffc300, #ffd60a)', // Green gradient
+                      color: 'black',
+                      // Add more styling as needed
+                    }}
+                >
+                  PlayTwo
+                </Button>
+
+              </div>
+
+              {numbers && numbers.length <= 0 &&
                   <div>
                     <Button
                         variant="contained"
@@ -113,14 +137,13 @@ const HomePage = () => {
               }
 
 
-
-              {numbers&&numbers.length>0&&
+              {numbers && numbers.length > 0 &&
                   <div>
                     <Button
                         variant="contained"
                         color="primary"
                         size="large"
-                        style={{ marginTop: 12 }}
+                        style={{marginTop: 12}}
                         onClick={handleClear} // Call handleClear to clear numbers
                         sx={{
                           background: 'linear-gradient(to right, #ef233c, #d90429)', // Green gradient
@@ -133,11 +156,11 @@ const HomePage = () => {
               }
 
 
-
             </Item>
           </Container>
 
         {/*<NumberFrequencyChart/>*/}
+        <DisplayData/>
 
         {posts.length > 0 ? (
             <Box display="flex" flexDirection="column" alignItems="center">
