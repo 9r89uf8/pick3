@@ -18,9 +18,9 @@ const DrawList = ({ draws }) => {
                             <Typography variant="body1">
                                 {item.time}
                             </Typography>
-                            <Typography variant="body1">
-                                {item.fireball}
-                            </Typography>
+                            {/*<Typography variant="body1">*/}
+                            {/*    {item.fireball}*/}
+                            {/*</Typography>*/}
                             <Typography variant="body1">
                                 {item.drawDate}
                             </Typography>

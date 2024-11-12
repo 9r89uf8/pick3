@@ -58,7 +58,7 @@ const DisplayData = () => {
     const movementThird = displayData.lastMovementsThirdNumber.slice().reverse();
 
     const data = firstNumbers.map((_, index) => ({
-        name: `Draw ${index + 1}`,
+        name: index + 1,
         firstNumber: firstNumbers[index],
         secondNumber: secondNumbers[index],
         thirdNumber: thirdNumbers[index]
@@ -66,7 +66,7 @@ const DisplayData = () => {
 
     const movementMap = { Up: 1, Equal: 0, Down: -1 };
     const movementData = movementFirst.map((_, index) => ({
-        name: `Draw ${index + 1}`,
+        name: index + 1,
         firstMovement: movementMap[movementFirst[index]],
         secondMovement: movementMap[movementSecond[index]],
         thirdMovement: movementMap[movementThird[index]],
@@ -81,7 +81,16 @@ const DisplayData = () => {
             {/* Latest Draw Information */}
             <Paper sx={{ p: 2, mb: 3, width: '100%' }}>
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={4}>
+                    <Grid
+                        item
+                        xs={12}
+                        md={4}
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                        }}
+                    >
                         <Box sx={{ mb: 2 }}>
                             <Button
                                 variant="contained"
@@ -96,24 +105,17 @@ const DisplayData = () => {
                                 Create Latest
                             </Button>
                         </Box>
-                        <Typography variant="h6" gutterBottom>Latest Draw</Typography>
+                        <Typography variant="h6" gutterBottom>
+                            Latest Draw
+                        </Typography>
                         <Typography>Date: {displayData.latestDrawDate}</Typography>
                         <Typography>Time: {displayData.latestDrawTime}</Typography>
                         <Typography>Numbers: {displayData.currentDraw}</Typography>
                         <Typography>Sum: {displayData.currentDrawSum}</Typography>
                     </Grid>
-                    <Grid item xs={12} md={8}>
-                        <Typography variant="h6" gutterBottom>Winning Combinations</Typography>
-                        <Box display="flex" flexWrap="wrap" gap={2}>
-                            {displayData.winningCombinations.map((combo, index) => (
-                                <Typography key={index} variant="body1">
-                                    {combo}
-                                </Typography>
-                            ))}
-                        </Box>
-                    </Grid>
                 </Grid>
             </Paper>
+
 
             {/* Numbers Line Chart */}
             <Paper sx={{ p: 2, mb: 3, width: '100%', height: '500px' }}>
@@ -134,7 +136,7 @@ const DisplayData = () => {
                             <Line
                                 type="monotone"
                                 dataKey="firstNumber"
-                                stroke="#8884d8"
+                                stroke="#c1121f"
                                 activeDot={{ r: 8 }}
                                 name="First Number"
                             />
@@ -197,13 +199,16 @@ const DisplayData = () => {
                             <Line
                                 type="monotone"
                                 dataKey="firstMovement"
-                                stroke="#8884d8"
+                                stroke="#c1121f"
                                 name="firstMovement"
+                                strokeDasharray="5 5"
+                                strokeWidth={2}
                             />
                             <Line
                                 type="monotone"
                                 dataKey="secondMovement"
                                 stroke="#82ca9d"
+                                fill="#82ca9d"
                                 name="secondMovement"
                             />
                             <Line

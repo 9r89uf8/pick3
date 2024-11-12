@@ -26,7 +26,7 @@ export const checkPosts = async () => {
     const setCheckLoading = useStore.getState().setCheckLoading;
     try {
         setCheckLoading(true)
-        const response = await fetch('/api/posts/check', {
+        const response = await fetch('/api/play/engine1PassTest', {
             method: 'GET',
             cache: 'no-store'
         });

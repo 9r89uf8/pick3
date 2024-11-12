@@ -2,19 +2,21 @@
 // app/page.js
 import React, { useEffect, useState } from 'react';
 import { fetchPosts, createPost, createAllPosts, checkPosts } from './services/postService'; // Import the fetchPosts service
-import {createHistory} from "@/app/services/historyService";
-import {analyze60, analyze10K, gatherIntel} from "@/app/services/testingService";
+import { createHistory } from "@/app/services/historyService";
+import { analyze60, analyze10K, gatherIntel } from "@/app/services/testingService";
 import NumberFrequencyChart from "@/app/components/NumberFrequencyChart";
 import Link from 'next/link';
 import DrawsList from "@/app/components/DrawsList";
 import { Button, List, ListItem, Container, Typography, Box } from '@mui/material';
-import {alpha, styled} from "@mui/material/styles";
+import { alpha, styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
 import { useStore } from '@/app/store/store';
-import {playNums} from "@/app/services/playService";
+import { createDataCollection } from "@/app/services/dataService";
+import { playNums } from "@/app/services/playService";
 import NumbersList from "@/app/components/NumbersList";
 import PostCreationButtons from "@/app/components/PostCreationButtons";
 import DisplayData from "@/app/components/DisplayData";
+import AnalysisDashboard from "@/app/components/AnalysisDashboard";
 
 const Item = styled(Paper)(({ theme }) => ({
   ...theme.typography.body2,
@@ -35,6 +37,9 @@ const HomePage = () => {
   const loadingCheck = useStore((state) => state.checkLoading);
   const clearNumbers = useStore((state) => state.clearNumbers); // Get the clearNumbers function
 
+  // State variable to toggle AnalysisDashboard
+  const [showDashboard, setShowDashboard] = useState(false);
+
   // Fetch posts on component mount
   useEffect(() => {
     const getPosts = async () => {
@@ -46,7 +51,8 @@ const HomePage = () => {
 
 
   const play = async () => {
-    await analyze60();
+    await playNums()
+    // await createDataCollection();
 
   };
 
@@ -67,105 +73,125 @@ const HomePage = () => {
 
       <Box sx={{ width: '100%' }}>
 
-          <Container maxWidth="sm">
-            <Item elevation={4}>
+        <Container maxWidth="sm">
+          <Item elevation={4}>
 
 
-              <PostCreationButtons/>
+            <PostCreationButtons />
 
-              <Box display="flex" flexDirection="column" alignItems="center">
-                <List>
-                  <NumbersList numbers={numbers}/>
-                </List>
-              </Box>
+            <Box display="flex" flexDirection="column" alignItems="center">
+              <List>
+                <NumbersList combinations={numbers} />
+              </List>
+            </Box>
 
-              <div>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    size='large'
-                    style={{marginTop: 12}}
-                    onClick={() => play()}
-                    sx={{
-                      background: 'linear-gradient(to right, #ffc300, #ffd60a)', // Green gradient
-                      color: 'black',
-                      // Add more styling as needed
-                    }}
-                >
-                  Play
-                </Button>
+            <div>
+              <Button
+                  variant="contained"
+                  color="primary"
+                  size='large'
+                  style={{ marginTop: 12 }}
+                  onClick={() => play()}
+                  sx={{
+                    background: 'linear-gradient(to right, #ffc300, #ffd60a)', // Yellow gradient
+                    color: 'black',
+                    // Add more styling as needed
+                  }}
+              >
+                Play
+              </Button>
 
-              </div>
+            </div>
 
-              <div>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    size='large'
-                    style={{marginTop: 12}}
-                    onClick={() => playTwo()}
-                    sx={{
-                      background: 'linear-gradient(to right, #ffc300, #ffd60a)', // Green gradient
-                      color: 'black',
-                      // Add more styling as needed
-                    }}
-                >
-                  PlayTwo
-                </Button>
+            {/*<div>*/}
+            {/*  <Button*/}
+            {/*      variant="contained"*/}
+            {/*      color="primary"*/}
+            {/*      size='large'*/}
+            {/*      style={{ marginTop: 12 }}*/}
+            {/*      onClick={() => playTwo()}*/}
+            {/*      sx={{*/}
+            {/*        background: 'linear-gradient(to right, #ffc300, #ffd60a)', // Yellow gradient*/}
+            {/*        color: 'black',*/}
+            {/*        // Add more styling as needed*/}
+            {/*      }}*/}
+            {/*  >*/}
+            {/*    PlayTwo*/}
+            {/*  </Button>*/}
 
-              </div>
+            {/*</div>*/}
 
-              {numbers && numbers.length <= 0 &&
-                  <div>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        size='large'
-                        style={{marginTop: 12}}
-                        onClick={() => check()}
-                        sx={{
-                          background: 'linear-gradient(to right, #ffffff, #e5e5e5)', // Green gradient
-                          color: 'black',
-                          // Add more styling as needed
-                        }}
-                        disabled={loadingCheck}
-                    >
-                      Check
-                    </Button>
+            {numbers && numbers.length <= 0 &&
+                <div>
+                  <Button
+                      variant="contained"
+                      color="primary"
+                      size='large'
+                      style={{ marginTop: 12 }}
+                      onClick={() => check()}
+                      sx={{
+                        background: 'linear-gradient(to right, #ffffff, #e5e5e5)', // Light gradient
+                        color: 'black',
+                        // Add more styling as needed
+                      }}
+                      disabled={loadingCheck}
+                  >
+                    Check
+                  </Button>
 
-                  </div>
-              }
-
-
-              {numbers && numbers.length > 0 &&
-                  <div>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        size="large"
-                        style={{marginTop: 12}}
-                        onClick={handleClear} // Call handleClear to clear numbers
-                        sx={{
-                          background: 'linear-gradient(to right, #ef233c, #d90429)', // Green gradient
-                          color: 'black',
-                        }}
-                    >
-                      Clear
-                    </Button>
-                  </div>
-              }
+                </div>
+            }
 
 
-            </Item>
-          </Container>
+            {numbers && numbers.length>0 &&
+                <div>
+                  <Button
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      style={{ marginTop: 12 }}
+                      onClick={handleClear} // Call handleClear to clear numbers
+                      sx={{
+                        background: 'linear-gradient(to right, #ef233c, #d90429)', // Red gradient
+                        color: 'black',
+                      }}
+                  >
+                    Clear
+                  </Button>
+                </div>
+            }
+
+            {/* Toggle Button for AnalysisDashboard */}
+            <div>
+              <Button
+                  variant="contained"
+                  color="primary"
+                  size='large'
+                  style={{ marginTop: 12 }}
+                  onClick={() => setShowDashboard(!showDashboard)}
+                  sx={{
+                    background: 'linear-gradient(to right, #ffc300, #ffd60a)', // Yellow gradient
+                    color: 'black',
+                  }}
+              >
+                {showDashboard ? 'Hide Dashboard' : 'Show Dashboard'}
+              </Button>
+            </div>
+
+          </Item>
+        </Container>
+
+        {/* Conditionally render AnalysisDashboard */}
+        {/*{showDashboard && <AnalysisDashboard />}*/}
+        {showDashboard && <DisplayData />}
 
         {/*<NumberFrequencyChart/>*/}
-        <DisplayData/>
+
 
         {posts.length > 0 ? (
             <Box display="flex" flexDirection="column" alignItems="center">
               <List>
-                <DrawsList draws={posts}/>
+                <DrawsList draws={posts} />
               </List>
             </Box>
         ) : (

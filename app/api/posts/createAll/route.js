@@ -38,7 +38,7 @@ export async function GET(req) {
         const page = await browser.newPage();
 
         const checkResults = async () => {
-            for (let pageNum = 11; pageNum >= 1; pageNum--) {
+            for (let pageNum = 9; pageNum >= 1; pageNum--) {
                 await page.goto(`https://www.illinoislottery.com/dbg/results/pick3?page=${pageNum}`, {
                     waitUntil: 'networkidle0'
                 });
@@ -279,6 +279,7 @@ export async function GET(req) {
             const docRef = infoCollection.doc();
             batch.set(docRef, numObj);
         });
+        console.log(firstPicks.length)
 
         batch.commit().then(() => {
             console.log('Batch write succeeded');
