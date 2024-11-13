@@ -20,3 +20,27 @@ export const playNums = async () => {
         return [];
     }
 };
+
+export const checkDraws = async () => {
+    const setCheckLoading = useStore.getState().setCheckLoading;
+    try {
+        setCheckLoading(true)
+        const response = await fetch('/api/play/check', {
+            method: 'GET',
+            cache: 'no-store'
+        });
+
+        if (response.ok) {
+            setCheckLoading(false)
+            const posts = await response.json();
+            return posts;
+        } else {
+            setCheckLoading(false)
+            throw new Error('Failed to check posts');
+        }
+    } catch (error) {
+        setCheckLoading(false)
+        console.error(error);
+        return [];
+    }
+};

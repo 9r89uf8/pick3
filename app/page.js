@@ -12,7 +12,7 @@ import { alpha, styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
 import { useStore } from '@/app/store/store';
 import { createDataCollection } from "@/app/services/dataService";
-import { playNums } from "@/app/services/playService";
+import { playNums, checkDraws } from "@/app/services/playService";
 import NumbersList from "@/app/components/NumbersList";
 import PostCreationButtons from "@/app/components/PostCreationButtons";
 import DisplayData from "@/app/components/DisplayData";
@@ -63,7 +63,7 @@ const HomePage = () => {
   };
 
   const check = async () => {
-    await checkPosts();
+    await checkDraws();
   };
 
   const handleClear = () => {
@@ -185,10 +185,10 @@ const HomePage = () => {
           </Item>
         </Container>
 
-        {showDashboard && <ProbabilityDisplay />}
         {/* Conditionally render AnalysisDashboard */}
         {/*{showDashboard && <AnalysisDashboard />}*/}
         {showDashboard && <DisplayData />}
+        {showDashboard && <ProbabilityDisplay />}
 
         {/*<NumberFrequencyChart/>*/}
 
