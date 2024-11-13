@@ -18,6 +18,7 @@ import {
     CheckCircle,
     Cancel,
 } from '@mui/icons-material';
+import ConnectionsVisualizer from "@/app/components/ConnectionsVisualizer";
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -138,6 +139,9 @@ const NumbersList = ({ combinations }) => {
     return (
         <Card elevation={0} sx={{ backgroundColor: 'transparent' }}>
             <CardContent>
+
+                <ConnectionsVisualizer combinations={combinations} />
+
                 <Grid container spacing={3}>
                     {combinations.map((combination, index) => (
                         <Grid item xs={12} sm={6} md={4} key={index}>
