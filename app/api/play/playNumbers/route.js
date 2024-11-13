@@ -69,7 +69,10 @@ export async function GET() {
                         currentNumbers: [currentFirstNumber, currentSecondNumber, currentThirdNumber],
                         previousNumbers1: [latestDraw.previousFirstNumber1, latestDraw.previousSecondNumber1, latestDraw.previousThirdNumber1],
                         previousNumbers2: [latestDraw.previousFirstNumber2, latestDraw.previousSecondNumber2, latestDraw.previousThirdNumber2],
+                        previousNumbers3: [latestDraw.previousFirstNumber3, latestDraw.previousSecondNumber3, latestDraw.previousThirdNumber3],
                         previousMovements1: [latestDraw.previousFirstNumberMovement1, latestDraw.previousSecondNumberMovement1, latestDraw.previousThirdNumberMovement1],
+                        previousMovements2: [latestDraw.previousFirstNumberMovement2, latestDraw.previousSecondNumberMovement2, latestDraw.previousThirdNumberMovement2],
+                        previousMovements3: [latestDraw.previousFirstNumberMovement3, latestDraw.previousSecondNumberMovement3, latestDraw.previousThirdNumberMovement3],
                         currentMovements: [latestDraw.firstNumberMovement, latestDraw.secondNumberMovement, latestDraw.thirdNumberMovement]
                     });
                 }
@@ -83,7 +86,7 @@ export async function GET() {
         }
 
         // Take the first 10 unique combinations
-        const combinations = allCombinations.slice(0, 10);
+        const combinations = allCombinations.slice(0, 5);
 
         // Return the combinations array as JSON
         return new Response(JSON.stringify(combinations), {

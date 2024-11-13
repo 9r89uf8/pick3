@@ -16,6 +16,7 @@ import { playNums } from "@/app/services/playService";
 import NumbersList from "@/app/components/NumbersList";
 import PostCreationButtons from "@/app/components/PostCreationButtons";
 import DisplayData from "@/app/components/DisplayData";
+import ProbabilityDisplay from "@/app/components/ProbabilityDisplay";
 import AnalysisDashboard from "@/app/components/AnalysisDashboard";
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -181,6 +182,7 @@ const HomePage = () => {
           </Item>
         </Container>
 
+        {showDashboard && <ProbabilityDisplay />}
         {/* Conditionally render AnalysisDashboard */}
         {/*{showDashboard && <AnalysisDashboard />}*/}
         {showDashboard && <DisplayData />}
