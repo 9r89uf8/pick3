@@ -80,11 +80,14 @@ const HomePage = () => {
 
             <PostCreationButtons />
 
-            <Box display="flex" flexDirection="column" alignItems="center">
-              <List>
-                <NumbersList combinations={numbers} />
-              </List>
-            </Box>
+
+            {numbers&&numbers.length>0 &&
+                <Box display="flex" flexDirection="column" alignItems="center">
+                  <List>
+                    <NumbersList combinations={numbers} />
+                  </List>
+                </Box>
+            }
 
             <div>
               <Button
