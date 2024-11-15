@@ -29,11 +29,11 @@ function isNumberUsedInCombinations(number, position, combinations) {
 }
 
 // Helper function to generate a partial match combination
-function generatePartialMatchCombination(currentNumbers, previousData, usedCombinations) {
+function generatePartialMatchCombination(currentNumbers, previousData, usedCombinations, excludedNumbers) {
     const inRangeNumbers = [
-        [0, 1, 2],      // Position 0 in-range numbers
-        [3, 4, 5, 6],   // Position 1 in-range numbers
-        [7, 8, 9]       // Position 2 in-range numbers
+        [0, 1, 2].filter(n => !excludedNumbers.first.includes(n)),      // Position 0 in-range numbers
+        [3, 4, 5, 6].filter(n => !excludedNumbers.second.includes(n)),   // Position 1 in-range numbers
+        [7, 8, 9].filter(n => !excludedNumbers.third.includes(n))       // Position 2 in-range numbers
     ];
 
     const outOfRangeNumbers = [
@@ -42,11 +42,16 @@ function generatePartialMatchCombination(currentNumbers, previousData, usedCombi
         [6]           // Position 2 out-of-range numbers
     ];
 
+    // Check if there are enough numbers available after exclusions
+    if (inRangeNumbers.some(range => range.length === 0)) {
+        return null; // Not enough numbers available after exclusions
+    }
+
     const outOfRangePosition = Math.floor(Math.random() * 3);
 
     let numbers = [];
     let attempts = 0;
-    const maxAttempts = 100; // Prevent infinite loops
+    const maxAttempts = 100;
 
     for (let i = 0; i < 3; i++) {
         attempts = 0;
@@ -79,7 +84,6 @@ function generatePartialMatchCombination(currentNumbers, previousData, usedCombi
         }
 
         if (attempts >= maxAttempts) {
-            // If we can't find valid numbers, return null to trigger regeneration
             return null;
         }
     }
@@ -93,17 +97,27 @@ function generatePartialMatchCombination(currentNumbers, previousData, usedCombi
 }
 
 // Function to generate unique in-range combinations
-function generateUniqueInRangeCombination(currentNumbers, previousData, usedCombinations) {
+function generateUniqueInRangeCombination(currentNumbers, previousData, usedCombinations, excludedNumbers) {
     const validCombinations = [];
 
-    for (let first = 0; first <= 2; first++) {
+    // Filter out excluded numbers from the ranges
+    const validFirstNumbers = [0, 1, 2].filter(n => !excludedNumbers.first.includes(n));
+    const validSecondNumbers = [3, 4, 5, 6].filter(n => !excludedNumbers.second.includes(n));
+    const validThirdNumbers = [7, 8, 9].filter(n => !excludedNumbers.third.includes(n));
+
+    // Check if there are enough numbers available after exclusions
+    if (validFirstNumbers.length === 0 || validSecondNumbers.length === 0 || validThirdNumbers.length === 0) {
+        return null;
+    }
+
+    for (let first of validFirstNumbers) {
         if (isNumberUsedInCombinations(first, 0, usedCombinations)) continue;
 
-        for (let second = 3; second <= 6; second++) {
+        for (let second of validSecondNumbers) {
             if (isNumberUsedInCombinations(second, 1, usedCombinations)) continue;
             if (second <= first) continue;
 
-            for (let third = 7; third <= 9; third++) {
+            for (let third of validThirdNumbers) {
                 if (isNumberUsedInCombinations(third, 2, usedCombinations)) continue;
                 if (third <= second) continue;
 
@@ -128,10 +142,16 @@ function generateUniqueInRangeCombination(currentNumbers, previousData, usedComb
     return validCombinations[randomIndex];
 }
 
-export async function GET() {
+export async function POST(req) {
     try {
         let month = getCurrentMonth();
         const firestore = adminDb.firestore();
+        const { excludedNumbers = { first: [], second: [], third: [] } } = await req.json();
+
+        // Validate excluded numbers
+        if (!Array.isArray(excludedNumbers.first)) excludedNumbers.first = [];
+        if (!Array.isArray(excludedNumbers.second)) excludedNumbers.second = [];
+        if (!Array.isArray(excludedNumbers.third)) excludedNumbers.third = [];
 
         const drawsCollection = firestore
             .collection("draws")
@@ -171,13 +191,23 @@ export async function GET() {
         while (combinations.length < 3 && attempts < maxAttempts) {
             if (combinations.length === 0) {
                 // Generate first in-range combination
-                const inRangeCombination = generateUniqueInRangeCombination(currentNumbers, previousData, combinations);
+                const inRangeCombination = generateUniqueInRangeCombination(
+                    currentNumbers,
+                    previousData,
+                    combinations,
+                    excludedNumbers
+                );
                 if (inRangeCombination) {
                     combinations.push(inRangeCombination);
                 }
             } else {
                 // Generate partial match combinations
-                const partialMatch = generatePartialMatchCombination(currentNumbers, previousData, combinations);
+                const partialMatch = generatePartialMatchCombination(
+                    currentNumbers,
+                    previousData,
+                    combinations,
+                    excludedNumbers
+                );
                 if (partialMatch) {
                     combinations.push(partialMatch);
                 }
@@ -186,7 +216,7 @@ export async function GET() {
         }
 
         if (combinations.length < 3) {
-            throw new Error('Unable to generate enough unique combinations.');
+            throw new Error('Unable to generate enough unique combinations with the given excluded numbers.');
         }
 
         // Shuffle the final combinations

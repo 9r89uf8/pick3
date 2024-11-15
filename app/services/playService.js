@@ -1,11 +1,12 @@
 import { useStore } from '../store/store'; // Ensure you import the correct store
 
-export const playNums = async () => {
+export const playNums = async (formData) => {
     const setNumbers = useStore.getState().setNumbers;
     try {
         const response = await fetch('/api/play/playNumbers',{
-            method: 'GET',
-            cache: 'no-store'
+            method: 'POST',
+            cache: 'no-store',
+            body: JSON.stringify(formData),
         });
 
         if (response.ok) {
