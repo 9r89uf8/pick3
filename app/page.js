@@ -11,9 +11,13 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Stack,
+  IconButton,
+  Collapse,
 } from '@mui/material';
 import { alpha, styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { useStore } from '@/app/store/store';
 import { playNums, checkDraws } from "@/app/services/playService";
 import NumbersList from "@/app/components/NumbersList";
@@ -31,15 +35,6 @@ const Item = styled(Paper)(({ theme }) => ({
   backdropFilter: 'blur(10px)',
   borderRadius: 10,
   border: `1px solid ${alpha('#ffffff', 0.2)}`,
-}));
-
-const NumberSelectionBox = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(2),
-  marginTop: theme.spacing(2),
-  marginBottom: theme.spacing(2),
-  borderRadius: theme.spacing(1),
-  background: 'rgba(255, 255, 255, 0.05)',
-  border: `1px solid ${alpha('#ffffff', 0.1)}`,
 }));
 
 const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
@@ -62,12 +57,22 @@ const StyledToggleButton = styled(ToggleButton)(({ theme }) => ({
   },
 }));
 
+const ExpandButton = styled(IconButton)(({ theme }) => ({
+  color: '#ffffff',
+  margin: theme.spacing(1),
+  transition: 'transform 0.3s',
+  '&:hover': {
+    backgroundColor: alpha('#ffffff', 0.1),
+  },
+}));
+
 const HomePage = () => {
   const posts = useStore((state) => state.posts);
   const numbers = useStore((state) => state.numbers);
   const [loading, setLoading] = useState(false);
   const clearNumbers = useStore((state) => state.clearNumbers);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [expandSection, setExpandSection] = useState(false);
 
   const [excludedNumbers, setExcludedNumbers] = useState({
     first: [],
@@ -92,9 +97,9 @@ const HomePage = () => {
   };
 
   const handlePlay = async () => {
-    setLoading(true)
+    setLoading(true);
     await playNums({ excludedNumbers });
-    setLoading(false)
+    setLoading(false);
   };
 
   const handleClear = () => {
@@ -126,31 +131,31 @@ const HomePage = () => {
       <Box sx={{ width: '100%' }}>
         <Container maxWidth="sm">
           <Item elevation={4}>
-              <Typography variant="h6" sx={{ mb: 2, color: '#ffc300' }}>
-                Select Numbers to Exclude
-              </Typography>
+            <Typography variant="h6" sx={{ mb: 2, color: '#ffc300' }}>
+              Select Numbers to Exclude
+            </Typography>
 
-              <Stack spacing={3}>
-                {renderNumberSelection('first', [0, 1, 2], 'First Position')}
-                {renderNumberSelection('second', [3, 4, 5, 6], 'Second Position')}
-                {renderNumberSelection('third', [7, 8, 9], 'Third Position')}
-              </Stack>
+            <Stack spacing={3}>
+              {renderNumberSelection('first', [0, 1, 2], 'First Position')}
+              {renderNumberSelection('second', [3, 4, 5, 6], 'Second Position')}
+              {renderNumberSelection('third', [7, 8, 9], 'Third Position')}
+            </Stack>
 
-              <Button
-                  variant="contained"
-                  disabled={loading}
-                  size="large"
-                  onClick={handlePlay}
-                  sx={{
-                    mt: 3,
-                    mb: 1,
-                    background: 'linear-gradient(to right, #f8f9fa, #e9ecef)',
-                    color: 'black',
-                    minWidth: 200,
-                  }}
-              >
-                Play
-              </Button>
+            <Button
+                variant="contained"
+                disabled={loading}
+                size="large"
+                onClick={handlePlay}
+                sx={{
+                  mt: 3,
+                  mb: 1,
+                  background: 'linear-gradient(to right, #f8f9fa, #e9ecef)',
+                  color: 'black',
+                  minWidth: 200,
+                }}
+            >
+              Play
+            </Button>
 
             {numbers && numbers.length > 0 && (
                 <Box display="flex" flexDirection="column" alignItems="center">
@@ -173,54 +178,47 @@ const HomePage = () => {
             )}
           </Item>
 
-
-          <Item elevation={4}>
-            <PostCreationButtons />
-
-            {/*{numbers && numbers.length <= 0 && (*/}
-            {/*    <Button*/}
-            {/*        variant="contained"*/}
-            {/*        size="large"*/}
-            {/*        onClick={() => checkDraws()}*/}
-            {/*        disabled={loadingCheck}*/}
-            {/*        sx={{*/}
-            {/*          mt: 2,*/}
-            {/*          background: 'linear-gradient(to right, #ffffff, #e5e5e5)',*/}
-            {/*          color: 'black',*/}
-            {/*        }}*/}
-            {/*    >*/}
-            {/*      Check*/}
-            {/*    </Button>*/}
-            {/*)}*/}
-
-            <Button
-                variant="contained"
-                size="large"
-                onClick={() => setShowDashboard(!showDashboard)}
-                sx={{
-                  mt: 2,
-                  background: 'linear-gradient(to right, #6c757d, #495057)',
-                  color: 'black',
-                }}
+          <Box sx={{ textAlign: 'center', mt: 1 }}>
+            <ExpandButton
+                onClick={() => setExpandSection(!expandSection)}
+                aria-label="expand section"
             >
-              {showDashboard ? 'Hide Dashboard' : 'Show Dashboard'}
-            </Button>
-          </Item>
+              {expandSection ? <KeyboardArrowUpIcon fontSize='large'/> : <KeyboardArrowDownIcon fontSize='large'/>}
+            </ExpandButton>
+          </Box>
 
-          {showDashboard && <DisplayData />}
-          {showDashboard && <ProbabilityDisplay />}
+          <Collapse in={expandSection}>
+            <Item elevation={4}>
+              <PostCreationButtons />
 
+              <Button
+                  variant="contained"
+                  size="large"
+                  onClick={() => setShowDashboard(!showDashboard)}
+                  sx={{
+                    mt: 2,
+                    background: 'linear-gradient(to right, #6c757d, #495057)',
+                    color: 'black',
+                  }}
+              >
+                {showDashboard ? 'Hide Dashboard' : 'Show Dashboard'}
+              </Button>
+            </Item>
+
+            {showDashboard && <DisplayData />}
+            {showDashboard && <ProbabilityDisplay />}
+          </Collapse>
+
+          {posts.length > 0 ? (
+              <Box display="flex" flexDirection="column" alignItems="center">
+                <List>
+                  <DrawsList draws={posts} />
+                </List>
+              </Box>
+          ) : (
+              <Typography sx={{ textAlign: 'center', mt: 2 }}>No posts available</Typography>
+          )}
         </Container>
-
-        {posts.length > 0 ? (
-            <Box display="flex" flexDirection="column" alignItems="center">
-              <List>
-                <DrawsList draws={posts} />
-              </List>
-            </Box>
-        ) : (
-            <Typography sx={{ textAlign: 'center', mt: 2 }}>No posts available</Typography>
-        )}
       </Box>
   );
 };
