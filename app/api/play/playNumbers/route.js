@@ -159,14 +159,33 @@ export async function POST(req) {
             .orderBy("index", "desc")
             .limit(1);
 
-        const snapshot = await drawsCollection.get();
+        const drawsCollectionLast20 = firestore
+            .collection("draws")
+            .where("drawMonth", "==", month)
+            .orderBy("index", "desc")
+            .limit(20);
 
-        if (snapshot.empty) {
+        // Fetch both the latest draw and last 20 draws
+        const [latestSnapshot, last20Snapshot] = await Promise.all([
+            drawsCollection.get(),
+            drawsCollectionLast20.get()
+        ]);
+
+        if (latestSnapshot.empty) {
             throw new Error('No draws found for the current month.');
         }
 
-        const latestDrawDoc = snapshot.docs[0];
+        // Get the latest draw data
+        const latestDrawDoc = latestSnapshot.docs[0];
         const latestDraw = latestDrawDoc.data();
+
+        // Extract last 20 draws combinations
+        const last20Combinations = last20Snapshot.docs.map(doc => {
+            const data = doc.data();
+            return [
+                [data.currentFirstNumber, data.currentSecondNumber, data.currentThirdNumber]
+            ];
+        }).flat();
 
         const currentNumbers = [
             latestDraw.currentFirstNumber,
@@ -184,39 +203,50 @@ export async function POST(req) {
             currentMovements: [latestDraw.firstNumberMovement, latestDraw.secondNumberMovement, latestDraw.thirdNumberMovement]
         };
 
+        // Helper function to check if a combination exists in last 20 draws
+        function isInLast20Draws(combination) {
+            return last20Combinations.some(existingComb =>
+                existingComb[0] === combination[0] &&
+                existingComb[1] === combination[1] &&
+                existingComb[2] === combination[2]
+            );
+        }
+
         const combinations = [];
-        let maxAttempts = 50;
+        let maxAttempts = 20; // Increased max attempts to account for additional validation
         let attempts = 0;
 
         while (combinations.length < 3 && attempts < maxAttempts) {
+            let newCombination;
+
             if (combinations.length === 0) {
                 // Generate first in-range combination
-                const inRangeCombination = generateUniqueInRangeCombination(
+                newCombination = generateUniqueInRangeCombination(
                     currentNumbers,
                     previousData,
                     combinations,
                     excludedNumbers
                 );
-                if (inRangeCombination) {
-                    combinations.push(inRangeCombination);
-                }
             } else {
                 // Generate partial match combinations
-                const partialMatch = generatePartialMatchCombination(
+                newCombination = generatePartialMatchCombination(
                     currentNumbers,
                     previousData,
                     combinations,
                     excludedNumbers
                 );
-                if (partialMatch) {
-                    combinations.push(partialMatch);
-                }
             }
+
+            // Only add the combination if it's valid and not in last 20 draws
+            if (newCombination && !isInLast20Draws(newCombination)) {
+                combinations.push(newCombination);
+            }
+
             attempts++;
         }
 
         if (combinations.length < 3) {
-            throw new Error('Unable to generate enough unique combinations with the given excluded numbers.');
+            throw new Error('Unable to generate enough unique combinations with the given constraints and excluded numbers.');
         }
 
         // Shuffle the final combinations
