@@ -206,10 +206,67 @@ export async function POST(req) {
         // Helper function to check if a combination exists in last 20 draws
         function isInLast20Draws(combination) {
             return last20Combinations.some(existingComb =>
-                existingComb[0] === combination[0] &&
-                existingComb[1] === combination[1] &&
-                existingComb[2] === combination[2]
+                existingComb.currentDraw === combination.numbers.join('')
             );
+        }
+
+        function tooSimilarToPrevious(combination) {
+            let found = false
+            if(combination.numbers[0]===latestDraw.currentFirstNumber&&
+                combination.numbers[1]===latestDraw.currentSecondNumber){
+                found = true
+            }
+            if(combination.numbers[0]===latestDraw.currentFirstNumber&&
+                combination.numbers[2]===latestDraw.currentThirdNumber){
+                found = true
+            }
+            if(combination.numbers[1]===latestDraw.currentSecondNumber&&
+                combination.numbers[2]===latestDraw.currentThirdNumber){
+                found = true
+            }
+
+            //previous1
+            if(combination.numbers[0]===latestDraw.previousFirstNumber1&&
+                combination.numbers[1]===latestDraw.previousSecondNumber1){
+                found = true
+            }
+            if(combination.numbers[0]===latestDraw.previousFirstNumber1&&
+                combination.numbers[2]===latestDraw.previousThirdNumber1){
+                found = true
+            }
+            if(combination.numbers[1]===latestDraw.previousSecondNumber1&&
+                combination.numbers[2]===latestDraw.previousThirdNumber1){
+                found = true
+            }
+
+            //previous 2
+            if(combination.numbers[0]===latestDraw.previousFirstNumber2&&
+                combination.numbers[1]===latestDraw.previousSecondNumber2){
+                found = true
+            }
+            if(combination.numbers[0]===latestDraw.previousFirstNumber2&&
+                combination.numbers[2]===latestDraw.previousThirdNumber2){
+                found = true
+            }
+            if(combination.numbers[1]===latestDraw.previousSecondNumber2&&
+                combination.numbers[2]===latestDraw.previousThirdNumber2){
+                found = true
+            }
+
+            //previous 3
+            if(combination.numbers[0]===latestDraw.previousFirstNumber3&&
+                combination.numbers[1]===latestDraw.previousSecondNumber3){
+                found = true
+            }
+            if(combination.numbers[0]===latestDraw.previousFirstNumber3&&
+                combination.numbers[2]===latestDraw.previousThirdNumber3){
+                found = true
+            }
+            if(combination.numbers[1]===latestDraw.previousSecondNumber3&&
+                combination.numbers[2]===latestDraw.previousThirdNumber3){
+                found = true
+            }
+            return found
         }
 
         const combinations = [];
@@ -238,7 +295,7 @@ export async function POST(req) {
             }
 
             // Only add the combination if it's valid and not in last 20 draws
-            if (newCombination && !isInLast20Draws(newCombination)) {
+            if (newCombination && !isInLast20Draws(newCombination) && !tooSimilarToPrevious(newCombination)) {
                 combinations.push(newCombination);
             }
 
