@@ -81,7 +81,7 @@ const ConnectionsVisualizer = ({ combinations }) => {
                 {/* Draw connections for each combination */}
                 {combinations.map((combination, combIndex) => {
                     // Using MUI default palette colors
-                    const colors = ['#1976d2', '#2e7d32', '#ed6c02']; // primary, success, warning
+                    const colors = ['#1976d2', '#2e7d32', '#ed6c02', '#000000']; // primary, success, warning
                     return (
                         <g key={`combination-${combIndex}`}>
                             {/* Line from first to second number */}

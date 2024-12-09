@@ -5,10 +5,32 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const BROWSER_WS = process.env.PROXY;
+const getMonths = () => {
+    const currentDate = new Date();
+    const currentMonthIndex = currentDate.getMonth(); // 0-11 (January is 0, December is 11)
 
+    let twoMonthsAgoIndex;
+    let previousMonthIndex;
+
+    if (currentMonthIndex === 0) {  // January
+        twoMonthsAgoIndex = 10;     // November of the previous year
+        previousMonthIndex = 11;    // December of the previous year
+    } else if (currentMonthIndex === 1) {  // February
+        twoMonthsAgoIndex = 11;     // December of the previous year
+        previousMonthIndex = 0;     // January
+    } else {
+        twoMonthsAgoIndex = currentMonthIndex - 2;
+        previousMonthIndex = currentMonthIndex - 1;
+    }
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    return [monthNames[previousMonthIndex], monthNames[currentMonthIndex], monthNames[twoMonthsAgoIndex]];
+};
 
 export async function GET(req) {
     try {
+        const [prevMonth, currentMonth] = getMonths();
         console.log('creating')
         let firstPicks = [];
         // Initialize 8 previous pick arrays
@@ -72,7 +94,7 @@ export async function GET(req) {
 
                 for (let i = 0; i < divsWithClassDfs.length; i++) {
                     const { dateInfo, drawInfo, pick, fireball } = divsWithClassDfs[i];
-                    if (dateInfo?.substring(0, 3) === 'Nov') {
+                    if (dateInfo?.substring(0, 3) === currentMonth) {
                         let [firstNumber = null, secondNumber = null, thirdNumber = null] = pick;
 
                         let r = parseInt(dateInfo?.match(/\d+/)?.[0] || '0')
