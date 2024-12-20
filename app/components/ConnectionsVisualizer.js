@@ -6,8 +6,8 @@ const ConnectionsVisualizer = ({numbers}) => {
     const totalWidth = 975;    // Increased from 650
     const margin = 60;         // Increased from 39
     const usableHeight = totalHeight - 2 * margin;
-    const numberXOffset = 70;  // Increased from 46
-    const numberYOffset = 18;  // Increased from 12
+    const numberXOffset = 78;  // Increased from 46
+    const numberYOffset = 27;  // Increased from 12
 
     const usedNumbers = numbers.reduce((acc, combination) => {
         combination.forEach((num, index) => {
@@ -92,8 +92,8 @@ const ConnectionsVisualizer = ({numbers}) => {
                                 {/* White circle background */}
                                 <circle
                                     cx={getXPosition(columnIndex) + numberXOffset}
-                                    cy={getYPosition(i) - 21 + numberYOffset}
-                                    r="35" // Adjusted to fit new font size
+                                    cy={getYPosition(i) - 28 + numberYOffset}
+                                    r="45" // Adjusted to fit new font size
                                     fill="white"
                                 />
                                 <text
@@ -102,7 +102,7 @@ const ConnectionsVisualizer = ({numbers}) => {
                                     textAnchor="middle"
                                     style={{
                                         fill: isNumberUsed(i, columnIndex) ? '#3B82F6' : '#CBD5E1',
-                                        fontSize: '65px', // Updated font size
+                                        fontSize: '85px', // Updated font size
                                         fontFamily: 'sans-serif'
                                     }}
                                 >
