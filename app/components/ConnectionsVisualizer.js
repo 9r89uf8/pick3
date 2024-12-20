@@ -1,12 +1,13 @@
 import React from 'react';
 
 const ConnectionsVisualizer = ({numbers}) => {
-    const totalHeight = 780;
-    const totalWidth = 650;
-    const margin = 39;
+    // Increased all dimensions by roughly 1.5x
+    const totalHeight = 1570;  // Increased from 780
+    const totalWidth = 975;    // Increased from 650
+    const margin = 60;         // Increased from 39
     const usableHeight = totalHeight - 2 * margin;
-    const numberXOffset = 46;
-    const numberYOffset = 12;
+    const numberXOffset = 70;  // Increased from 46
+    const numberYOffset = 18;  // Increased from 12
 
     const usedNumbers = numbers.reduce((acc, combination) => {
         combination.forEach((num, index) => {
@@ -18,11 +19,11 @@ const ConnectionsVisualizer = ({numbers}) => {
 
     const getYPosition = (number) => {
         const position = number / 9;
-        return totalHeight - (position * usableHeight + margin) + 5;
+        return totalHeight - (position * usableHeight + margin) + 8; // Adjusted offset
     };
 
     const getXPosition = (columnIndex) => {
-        return 130 + columnIndex * 195;
+        return 195 + columnIndex * 293; // Increased spacing between columns
     };
 
     const colors = [
@@ -39,7 +40,7 @@ const ConnectionsVisualizer = ({numbers}) => {
     };
 
     return (
-        <div style={{ width: '100%', maxWidth: '1040px', margin: '0 auto' }}>
+        <div style={{ width: '100%', maxWidth: '1560px', margin: '0 auto' }}> {/* Increased maxWidth */}
             <svg
                 viewBox={`0 0 ${totalWidth} ${totalHeight}`}
                 style={{ width: '100%', height: '100%' }}
@@ -53,7 +54,7 @@ const ConnectionsVisualizer = ({numbers}) => {
                         x2={getXPosition(columnIndex)}
                         y2={totalHeight - margin}
                         stroke="#e5e7eb"
-                        strokeWidth="4.6"
+                        strokeWidth="7" // Increased from 4.6
                     />
                 ))}
 
@@ -67,7 +68,7 @@ const ConnectionsVisualizer = ({numbers}) => {
                             x2={getXPosition(1)}
                             y2={getYPosition(combination[1])}
                             stroke={colors[combIndex % colors.length]}
-                            strokeWidth="4.6"
+                            strokeWidth="7" // Increased from 4.6
                             strokeOpacity="0.6"
                         />
                         {/* Line from second to third number */}
@@ -77,7 +78,7 @@ const ConnectionsVisualizer = ({numbers}) => {
                             x2={getXPosition(2)}
                             y2={getYPosition(combination[2])}
                             stroke={colors[combIndex % colors.length]}
-                            strokeWidth="4.6"
+                            strokeWidth="7" // Increased from 4.6
                             strokeOpacity="0.6"
                         />
                     </g>
@@ -91,8 +92,8 @@ const ConnectionsVisualizer = ({numbers}) => {
                                 {/* White circle background */}
                                 <circle
                                     cx={getXPosition(columnIndex) + numberXOffset}
-                                    cy={getYPosition(i) - 14 + numberYOffset}
-                                    r="22"
+                                    cy={getYPosition(i) - 21 + numberYOffset}
+                                    r="35" // Adjusted to fit new font size
                                     fill="white"
                                 />
                                 <text
@@ -101,7 +102,7 @@ const ConnectionsVisualizer = ({numbers}) => {
                                     textAnchor="middle"
                                     style={{
                                         fill: isNumberUsed(i, columnIndex) ? '#3B82F6' : '#CBD5E1',
-                                        fontSize: '41px',
+                                        fontSize: '65px', // Updated font size
                                         fontFamily: 'sans-serif'
                                     }}
                                 >
@@ -115,7 +116,7 @@ const ConnectionsVisualizer = ({numbers}) => {
                                 key={`point-${combIndex}-${combination[columnIndex]}`}
                                 cx={getXPosition(columnIndex)}
                                 cy={getYPosition(combination[columnIndex])}
-                                r="10.8"
+                                r="16" // Increased from 10.8
                                 fill={colors[combIndex % colors.length]}
                                 opacity="0.8"
                             />
