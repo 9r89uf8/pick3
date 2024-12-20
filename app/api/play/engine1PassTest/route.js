@@ -12,8 +12,6 @@ export async function GET() {
         // Query the latest draw in the current month, ordered by index descending
         const drawsCollection = firestore
             .collection("draws")
-            .where("drawMonth", "==", 'Mar')
-            .orderBy("index", "desc")
 
         const snapshot = await drawsCollection.get();
         const draws = [];
@@ -31,9 +29,9 @@ export async function GET() {
         for (let i = 1; i < draws.length; i++) {
             // Extract the last 8 first numbers
             let latestDraw = draws[i];
-            if(latestDraw.currentFirstNumber<=2){
-                if(latestDraw.currentSecondNumber>=3&&latestDraw.currentSecondNumber<=6){
-                    if(latestDraw.currentThirdNumber>=7&&latestDraw.currentThirdNumber<=9){
+            if(latestDraw.currentFirstNumber<=3){
+                if(latestDraw.currentSecondNumber>=2&&latestDraw.currentSecondNumber<=7){
+                    if(latestDraw.currentThirdNumber>=6&&latestDraw.currentThirdNumber<=9){
                         totalCorrectPredictions += 1;
                     }
                 }
@@ -43,7 +41,7 @@ export async function GET() {
         }
 
 
-        console.log(totalDraws)
+        console.log(draws.length)
         console.log(totalCorrectPredictions)
 
         return new Response(JSON.stringify(totalCorrectPredictions), {

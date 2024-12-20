@@ -101,6 +101,7 @@ export async function POST(req) {
         const firestore = adminDb.firestore();
         const { excludedNumbers = { first: [], second: [], third: [] } } = await req.json();
 
+
         // Validate excluded numbers
         if (!Array.isArray(excludedNumbers.first)) excludedNumbers.first = [];
         if (!Array.isArray(excludedNumbers.second)) excludedNumbers.second = [];
@@ -157,6 +158,8 @@ export async function POST(req) {
         // Generate candidates for each draw
 
         // Draw #1:
+        //first & second in range
+        //third out of range
         let candidates1 = [];
         for (let f of [0,1,2]) {
             for (let s of [3,4,5,6]) {
@@ -172,6 +175,8 @@ export async function POST(req) {
         }
 
         // Draw #2:
+        //first & third in range
+        //second out of range
         let candidates2 = [];
         for (let f of [0,1,2]) {
             for (let sec of [2,7]) {
@@ -191,6 +196,8 @@ export async function POST(req) {
         }
 
         // Draw #3:
+        //second & third in range
+        //first out of range
         let candidates3 = [];
         {
             const f = 3;
@@ -213,6 +220,7 @@ export async function POST(req) {
         }
 
         // Draw #4:
+        //first & second and third in range
         let candidates4 = [];
         for (let f of [0,1,2]) {
             for (let s of [3,4,5,6]) {

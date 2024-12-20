@@ -6,9 +6,6 @@ export const revalidate = 0;
 
 const BROWSER_WS = process.env.PROXY;
 
-
-
-
 export async function GET(req) {
     try {
         let firstPicks = [];
@@ -52,28 +49,35 @@ export async function GET(req) {
                         r = (r * 2) + 1;
                     }
 
-                    // Sort numbers if they exist
+                    // Create sorted version
+                    let sortedNumbers = [...pick];
                     if (firstNumber !== null && secondNumber !== null && thirdNumber !== null) {
-                        let numbers = [firstNumber, secondNumber, thirdNumber];
-                        numbers.sort((a, b) => a - b);
-                        [firstNumber, secondNumber, thirdNumber] = numbers;
+                        sortedNumbers.sort((a, b) => a - b);
                     }
+                    let [sortedFirst, sortedSecond, sortedThird] = sortedNumbers;
 
                     return {
-                        firstNumber,
-                        secondNumber,
-                        thirdNumber,
+                        // Original numbers
+                        originalFirstNumber: firstNumber,
+                        originalSecondNumber: secondNumber,
+                        originalThirdNumber: thirdNumber,
+                        // Sorted numbers
+                        sortedFirstNumber: sortedFirst,
+                        sortedSecondNumber: sortedSecond,
+                        sortedThirdNumber: sortedThird,
                         fireball: fireball ? parseInt(fireball) : null,
                         dateInfo,
                         drawInfo,
                         r
                     };
                 } else {
-                    // Return null values for missing draws
                     return {
-                        firstNumber: null,
-                        secondNumber: null,
-                        thirdNumber: null,
+                        originalFirstNumber: null,
+                        originalSecondNumber: null,
+                        originalThirdNumber: null,
+                        sortedFirstNumber: null,
+                        sortedSecondNumber: null,
+                        sortedThirdNumber: null,
                         fireball: null,
                         dateInfo: null,
                         drawInfo: null,
@@ -82,130 +86,117 @@ export async function GET(req) {
                 }
             });
 
-            // Function to determine movement, handling null values
-            const getMovement = (current, previous) => {
-                if (current === null || previous === null) return null;
-                if (current > previous) return 'Up';
-                if (current < previous) return 'Down';
-                return 'Equal';
-            };
-
-            // Calculate movements between each consecutive pair of draws
-            const movements = {
-                first: Array(7).fill(null),
-                second: Array(7).fill(null),
-                third: Array(7).fill(null)
-            };
-
-            for (let i = 0; i < 7; i++) {
-                movements.first[i] = getMovement(allDraws[i]?.firstNumber, allDraws[i + 1]?.firstNumber);
-                movements.second[i] = getMovement(allDraws[i]?.secondNumber, allDraws[i + 1]?.secondNumber);
-                movements.third[i] = getMovement(allDraws[i]?.thirdNumber, allDraws[i + 1]?.thirdNumber);
-            }
-
             // Get current draw (first in the list)
             const currentDraw = allDraws[0];
 
-            // Handle winning combinations with null check
-            const winningCombinations = currentDraw.fireball !== null && currentDraw.firstNumber !== null ? [
-                `${currentDraw.fireball}${currentDraw.secondNumber}${currentDraw.thirdNumber}`,
-                `${currentDraw.firstNumber}${currentDraw.fireball}${currentDraw.thirdNumber}`,
-                `${currentDraw.firstNumber}${currentDraw.secondNumber}${currentDraw.fireball}`,
-                `${currentDraw.firstNumber}${currentDraw.secondNumber}${currentDraw.thirdNumber}`
-            ] : currentDraw.firstNumber !== null ?
-                [`${currentDraw.firstNumber}${currentDraw.secondNumber}${currentDraw.thirdNumber}`] :
-                [];
+            // Calculate sums for both original and sorted
+            const originalDrawSum = currentDraw.originalFirstNumber !== null &&
+            currentDraw.originalSecondNumber !== null &&
+            currentDraw.originalThirdNumber !== null
+                ? currentDraw.originalFirstNumber + currentDraw.originalSecondNumber + currentDraw.originalThirdNumber
+                : null;
 
-            // Calculate current draw sum with null check
-            const currentDrawSum = currentDraw.firstNumber !== null &&
-            currentDraw.secondNumber !== null &&
-            currentDraw.thirdNumber !== null ?
-                currentDraw.firstNumber + currentDraw.secondNumber + currentDraw.thirdNumber :
-                null;
+            const sortedDrawSum = currentDraw.sortedFirstNumber !== null &&
+            currentDraw.sortedSecondNumber !== null &&
+            currentDraw.sortedThirdNumber !== null
+                ? currentDraw.sortedFirstNumber + currentDraw.sortedSecondNumber + currentDraw.sortedThirdNumber
+                : null;
 
             const completeCurrentDraw = {
-                currentFirstNumber: currentDraw.firstNumber,
-                currentSecondNumber: currentDraw.secondNumber,
-                currentThirdNumber: currentDraw.thirdNumber,
-                currentDraw: currentDraw.firstNumber !== null ?
-                    `${currentDraw.firstNumber}${currentDraw.secondNumber}${currentDraw.thirdNumber}` :
-                    null,
-                currentDrawSum,
-                firstAndSecondNumber: currentDraw.firstNumber !== null ?
-                    `${currentDraw.firstNumber}${currentDraw.secondNumber}` :
-                    null,
-                secondAndThirdNumber: currentDraw.secondNumber !== null ?
-                    `${currentDraw.secondNumber}${currentDraw.thirdNumber}` :
-                    null,
-                firstAndThirdNumber: currentDraw.firstNumber !== null ?
-                    `${currentDraw.firstNumber}${currentDraw.thirdNumber}` :
-                    null,
-                winningCombinations,
+                // Original order data
+                originalFirstNumber: currentDraw.originalFirstNumber,
+                originalSecondNumber: currentDraw.originalSecondNumber,
+                originalThirdNumber: currentDraw.originalThirdNumber,
+                originalDraw: currentDraw.originalFirstNumber !== null
+                    ? `${currentDraw.originalFirstNumber}${currentDraw.originalSecondNumber}${currentDraw.originalThirdNumber}`
+                    : null,
+                originalDrawSum,
+                originalFirstAndSecond: currentDraw.originalFirstNumber !== null
+                    ? `${currentDraw.originalFirstNumber}${currentDraw.originalSecondNumber}`
+                    : null,
+                originalSecondAndThird: currentDraw.originalSecondNumber !== null
+                    ? `${currentDraw.originalSecondNumber}${currentDraw.originalThirdNumber}`
+                    : null,
+                originalFirstAndThird: currentDraw.originalFirstNumber !== null
+                    ? `${currentDraw.originalFirstNumber}${currentDraw.originalThirdNumber}`
+                    : null,
 
-                // Movement data
-                firstNumberMovement: movements.first[0],
-                previousFirstNumberMovement1: movements.first[1],
-                previousFirstNumberMovement2: movements.first[2],
-                previousFirstNumberMovement3: movements.first[3],
-                previousFirstNumberMovement4: movements.first[4],
-                previousFirstNumberMovement5: movements.first[5],
-                previousFirstNumberMovement6: movements.first[6],
+                // Sorted order data
+                sortedFirstNumber: currentDraw.sortedFirstNumber,
+                sortedSecondNumber: currentDraw.sortedSecondNumber,
+                sortedThirdNumber: currentDraw.sortedThirdNumber,
+                sortedDraw: currentDraw.sortedFirstNumber !== null
+                    ? `${currentDraw.sortedFirstNumber}${currentDraw.sortedSecondNumber}${currentDraw.sortedThirdNumber}`
+                    : null,
+                sortedDrawSum,
+                sortedFirstAndSecond: currentDraw.sortedFirstNumber !== null
+                    ? `${currentDraw.sortedFirstNumber}${currentDraw.sortedSecondNumber}`
+                    : null,
+                sortedSecondAndThird: currentDraw.sortedSecondNumber !== null
+                    ? `${currentDraw.sortedSecondNumber}${currentDraw.sortedThirdNumber}`
+                    : null,
+                sortedFirstAndThird: currentDraw.sortedFirstNumber !== null
+                    ? `${currentDraw.sortedFirstNumber}${currentDraw.sortedThirdNumber}`
+                    : null,
 
-                secondNumberMovement: movements.second[0],
-                previousSecondNumberMovement1: movements.second[1],
-                previousSecondNumberMovement2: movements.second[2],
-                previousSecondNumberMovement3: movements.second[3],
-                previousSecondNumberMovement4: movements.second[4],
-                previousSecondNumberMovement5: movements.second[5],
-                previousSecondNumberMovement6: movements.second[6],
+                // Previous numbers (original order)
+                originalPreviousFirst1: allDraws[1]?.originalFirstNumber ?? null,
+                originalPreviousFirst2: allDraws[2]?.originalFirstNumber ?? null,
+                originalPreviousFirst3: allDraws[3]?.originalFirstNumber ?? null,
+                originalPreviousFirst4: allDraws[4]?.originalFirstNumber ?? null,
+                originalPreviousFirst5: allDraws[5]?.originalFirstNumber ?? null,
+                originalPreviousFirst6: allDraws[6]?.originalFirstNumber ?? null,
+                originalPreviousFirst7: allDraws[7]?.originalFirstNumber ?? null,
+                originalPreviousFirst8: allDraws[8]?.originalFirstNumber ?? null,
 
-                thirdNumberMovement: movements.third[0],
-                previousThirdNumberMovement1: movements.third[1],
-                previousThirdNumberMovement2: movements.third[2],
-                previousThirdNumberMovement3: movements.third[3],
-                previousThirdNumberMovement4: movements.third[4],
-                previousThirdNumberMovement5: movements.third[5],
-                previousThirdNumberMovement6: movements.third[6],
+                originalPreviousSecond1: allDraws[1]?.originalSecondNumber ?? null,
+                originalPreviousSecond2: allDraws[2]?.originalSecondNumber ?? null,
+                originalPreviousSecond3: allDraws[3]?.originalSecondNumber ?? null,
+                originalPreviousSecond4: allDraws[4]?.originalSecondNumber ?? null,
+                originalPreviousSecond5: allDraws[5]?.originalSecondNumber ?? null,
+                originalPreviousSecond6: allDraws[6]?.originalSecondNumber ?? null,
+                originalPreviousSecond7: allDraws[7]?.originalSecondNumber ?? null,
+                originalPreviousSecond8: allDraws[8]?.originalSecondNumber ?? null,
 
-                // Previous numbers
-                previousFirstNumber1: allDraws[1]?.firstNumber ?? null,
-                previousFirstNumber2: allDraws[2]?.firstNumber ?? null,
-                previousFirstNumber3: allDraws[3]?.firstNumber ?? null,
-                previousFirstNumber4: allDraws[4]?.firstNumber ?? null,
-                previousFirstNumber5: allDraws[5]?.firstNumber ?? null,
-                previousFirstNumber6: allDraws[6]?.firstNumber ?? null,
-                previousFirstNumber7: allDraws[7]?.firstNumber ?? null,
-                previousFirstNumber8: allDraws[8]?.firstNumber ?? null,
+                originalPreviousThird1: allDraws[1]?.originalThirdNumber ?? null,
+                originalPreviousThird2: allDraws[2]?.originalThirdNumber ?? null,
+                originalPreviousThird3: allDraws[3]?.originalThirdNumber ?? null,
+                originalPreviousThird4: allDraws[4]?.originalThirdNumber ?? null,
+                originalPreviousThird5: allDraws[5]?.originalThirdNumber ?? null,
+                originalPreviousThird6: allDraws[6]?.originalThirdNumber ?? null,
+                originalPreviousThird7: allDraws[7]?.originalThirdNumber ?? null,
+                originalPreviousThird8: allDraws[8]?.originalThirdNumber ?? null,
 
-                previousSecondNumber1: allDraws[1]?.secondNumber ?? null,
-                previousSecondNumber2: allDraws[2]?.secondNumber ?? null,
-                previousSecondNumber3: allDraws[3]?.secondNumber ?? null,
-                previousSecondNumber4: allDraws[4]?.secondNumber ?? null,
-                previousSecondNumber5: allDraws[5]?.secondNumber ?? null,
-                previousSecondNumber6: allDraws[6]?.secondNumber ?? null,
-                previousSecondNumber7: allDraws[7]?.secondNumber ?? null,
-                previousSecondNumber8: allDraws[8]?.secondNumber ?? null,
+                // Previous numbers (sorted order)
+                sortedPreviousFirst1: allDraws[1]?.sortedFirstNumber ?? null,
+                sortedPreviousFirst2: allDraws[2]?.sortedFirstNumber ?? null,
+                sortedPreviousFirst3: allDraws[3]?.sortedFirstNumber ?? null,
+                sortedPreviousFirst4: allDraws[4]?.sortedFirstNumber ?? null,
+                sortedPreviousFirst5: allDraws[5]?.sortedFirstNumber ?? null,
+                sortedPreviousFirst6: allDraws[6]?.sortedFirstNumber ?? null,
+                sortedPreviousFirst7: allDraws[7]?.sortedFirstNumber ?? null,
+                sortedPreviousFirst8: allDraws[8]?.sortedFirstNumber ?? null,
 
-                previousThirdNumber1: allDraws[1]?.thirdNumber ?? null,
-                previousThirdNumber2: allDraws[2]?.thirdNumber ?? null,
-                previousThirdNumber3: allDraws[3]?.thirdNumber ?? null,
-                previousThirdNumber4: allDraws[4]?.thirdNumber ?? null,
-                previousThirdNumber5: allDraws[5]?.thirdNumber ?? null,
-                previousThirdNumber6: allDraws[6]?.thirdNumber ?? null,
-                previousThirdNumber7: allDraws[7]?.thirdNumber ?? null,
-                previousThirdNumber8: allDraws[8]?.thirdNumber ?? null,
+                sortedPreviousSecond1: allDraws[1]?.sortedSecondNumber ?? null,
+                sortedPreviousSecond2: allDraws[2]?.sortedSecondNumber ?? null,
+                sortedPreviousSecond3: allDraws[3]?.sortedSecondNumber ?? null,
+                sortedPreviousSecond4: allDraws[4]?.sortedSecondNumber ?? null,
+                sortedPreviousSecond5: allDraws[5]?.sortedSecondNumber ?? null,
+                sortedPreviousSecond6: allDraws[6]?.sortedSecondNumber ?? null,
+                sortedPreviousSecond7: allDraws[7]?.sortedSecondNumber ?? null,
+                sortedPreviousSecond8: allDraws[8]?.sortedSecondNumber ?? null,
 
-                // Previous fireballs
+                sortedPreviousThird1: allDraws[1]?.sortedThirdNumber ?? null,
+                sortedPreviousThird2: allDraws[2]?.sortedThirdNumber ?? null,
+                sortedPreviousThird3: allDraws[3]?.sortedThirdNumber ?? null,
+                sortedPreviousThird4: allDraws[4]?.sortedThirdNumber ?? null,
+                sortedPreviousThird5: allDraws[5]?.sortedThirdNumber ?? null,
+                sortedPreviousThird6: allDraws[6]?.sortedThirdNumber ?? null,
+                sortedPreviousThird7: allDraws[7]?.sortedThirdNumber ?? null,
+                sortedPreviousThird8: allDraws[8]?.sortedThirdNumber ?? null,
+
+                // Common fields
                 fireball: currentDraw.fireball,
-                previousFireball1: allDraws[1]?.fireball ?? null,
-                previousFireball2: allDraws[2]?.fireball ?? null,
-                previousFireball3: allDraws[3]?.fireball ?? null,
-                previousFireball4: allDraws[4]?.fireball ?? null,
-                previousFireball5: allDraws[5]?.fireball ?? null,
-                previousFireball6: allDraws[6]?.fireball ?? null,
-                previousFireball7: allDraws[7]?.fireball ?? null,
-                previousFireball8: allDraws[8]?.fireball ?? null,
-
                 drawDate: currentDraw.dateInfo || null,
                 drawMonth: currentDraw.dateInfo ? currentDraw.dateInfo.substring(0, 3) : null,
                 index: currentDraw.r || null,

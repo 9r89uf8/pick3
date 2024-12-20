@@ -85,18 +85,6 @@ const PatternChip = styled(Chip)(({ count, theme }) => ({
 }));
 
 const NumbersList = ({ combinations }) => {
-    const getMovementIcon = (movement) => {
-        if (movement.toLowerCase().includes('up')) return <TrendingUp />;
-        if (movement.toLowerCase().includes('down')) return <TrendingDown />;
-        return <TrendingFlat />;
-    };
-
-    const getMovementTrend = (movement) => {
-        if (movement.toLowerCase().includes('up')) return 'up';
-        if (movement.toLowerCase().includes('down')) return 'down';
-        return 'flat';
-    };
-
     const isInRange = (number, position) => {
         if (position === 0) return [0, 1, 2].includes(Number(number));
         if (position === 1) return [3, 4, 5, 6].includes(Number(number));
@@ -104,25 +92,6 @@ const NumbersList = ({ combinations }) => {
         return false;
     };
 
-    const analyzeRangePattern = (numbers) => {
-        const inRange = numbers.map((num, idx) => isInRange(num, idx));
-        const count = inRange.filter(Boolean).length;
-
-        let pattern = '';
-        if (count === 3) {
-            pattern = 'All numbers in range';
-        } else if (count === 2) {
-            if (inRange[0] && inRange[1]) pattern = '1st & 2nd in range';
-            else if (inRange[0] && inRange[2]) pattern = '1st & 3rd in range';
-            else if (inRange[1] && inRange[2]) pattern = '2nd & 3rd in range';
-        } else if (count === 1) {
-            pattern = 'One number in range';
-        } else {
-            pattern = 'No numbers in range';
-        }
-
-        return { count, pattern };
-    };
 
     if (!combinations || combinations.length === 0) {
         return (
@@ -140,7 +109,7 @@ const NumbersList = ({ combinations }) => {
         <Card elevation={0} sx={{ backgroundColor: 'transparent' }}>
             <CardContent>
 
-                <ConnectionsVisualizer combinations={combinations} />
+                <ConnectionsVisualizer numbers={combinations} />
 
                 <Grid container spacing={3}>
                     {combinations.map((combination, index) => (
@@ -152,91 +121,15 @@ const NumbersList = ({ combinations }) => {
                                         Prediction #{index + 1}
                                     </Typography>
                                     <Box display="flex" justifyContent="space-around" sx={{ mb: 2 }}>
-                                        {combination.numbers.map((number, idx) => (
+                                        {combination.map((number, idx) => (
                                             <Box key={idx} textAlign="center">
                                                 <PredictionNumber>
                                                     {number}
                                                 </PredictionNumber>
-                                                <MovementChip
-                                                    icon={getMovementIcon(combination.movements[idx])}
-                                                    label={combination.movements[idx]}
-                                                    trend={getMovementTrend(combination.movements[idx])}
-                                                    size="small"
-                                                />
                                             </Box>
                                         ))}
                                     </Box>
                                 </Box>
-
-                                <Divider sx={{ my: 2 }} />
-
-                                {/* Historical Data Section */}
-                                <Typography variant="overline" color="textSecondary" gutterBottom>
-                                    Historical Data
-                                </Typography>
-                                <HistoryBox>
-                                    {[
-                                        {
-                                            numbers: combination.currentNumbers,
-                                            movements: combination.currentMovements,
-                                            label: 'Current'
-                                        },
-                                        {
-                                            numbers: combination.previousNumbers1,
-                                            movements: combination.previousMovements1,
-                                            label: 'Previous 1'
-                                        },
-                                        {
-                                            numbers: combination.previousNumbers2,
-                                            movements: combination.previousMovements2,
-                                            label: 'Previous 2'
-                                        },
-                                        {
-                                            numbers: combination.previousNumbers3,
-                                            movements: combination.previousMovements3,
-                                            label: 'Previous 3'
-                                        }
-                                    ].map((history, historyIndex) => {
-                                        const rangePattern = analyzeRangePattern(history.numbers);
-                                        return (
-                                            <Box key={historyIndex} sx={{ mb: 3 }}>
-                                                <Box display="flex" justifyContent="space-between" alignItems="center">
-                                                    <Typography variant="caption" color="textSecondary">
-                                                        {history.label}
-                                                    </Typography>
-                                                    <PatternChip
-                                                        label={rangePattern.pattern}
-                                                        size="small"
-                                                        count={rangePattern.count}
-                                                    />
-                                                </Box>
-                                                <Box display="flex" justifyContent="space-around" sx={{ mt: 1 }}>
-                                                    {history.numbers.map((num, numIndex) => (
-                                                        <Tooltip
-                                                            key={numIndex}
-                                                            title={`Range ${numIndex === 0 ? '[0,1,2]' : numIndex === 1 ? '[3,4,5,6]' : '[7,8,9]'}`}
-                                                        >
-                                                            <RangeIndicator
-                                                                inrange={isInRange(num, numIndex).toString()}
-                                                            >
-                                                                <Box textAlign="center">
-                                                                    <Typography variant="h6" fontWeight="medium">
-                                                                        {num}
-                                                                    </Typography>
-                                                                    {history.movements && (
-                                                                        <Typography variant="h6" color="textSecondary">
-                                                                            {history.movements[numIndex]}
-                                                                        </Typography>
-                                                                    )}
-                                                                </Box>
-                                                            </RangeIndicator>
-                                                        </Tooltip>
-                                                    ))}
-                                                </Box>
-                                            </Box>
-                                        );
-                                    })}
-                                </HistoryBox>
                             </StyledPaper>
                         </Grid>
                     ))}

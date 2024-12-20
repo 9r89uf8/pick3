@@ -7,24 +7,23 @@ export const revalidate = 0;
 const BROWSER_WS = process.env.PROXY;
 const getMonths = () => {
     const currentDate = new Date();
-    const currentMonthIndex = currentDate.getMonth(); // 0-11 (January is 0, December is 11)
+    const currentMonthIndex = currentDate.getMonth();
 
     let twoMonthsAgoIndex;
     let previousMonthIndex;
 
-    if (currentMonthIndex === 0) {  // January
-        twoMonthsAgoIndex = 10;     // November of the previous year
-        previousMonthIndex = 11;    // December of the previous year
-    } else if (currentMonthIndex === 1) {  // February
-        twoMonthsAgoIndex = 11;     // December of the previous year
-        previousMonthIndex = 0;     // January
+    if (currentMonthIndex === 0) {
+        twoMonthsAgoIndex = 10;
+        previousMonthIndex = 11;
+    } else if (currentMonthIndex === 1) {
+        twoMonthsAgoIndex = 11;
+        previousMonthIndex = 0;
     } else {
         twoMonthsAgoIndex = currentMonthIndex - 2;
         previousMonthIndex = currentMonthIndex - 1;
     }
 
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
     return [monthNames[previousMonthIndex], monthNames[currentMonthIndex], monthNames[twoMonthsAgoIndex]];
 };
 
@@ -32,26 +31,26 @@ export async function GET(req) {
     try {
         const [prevMonth, currentMonth] = getMonths();
         console.log('creating')
-        let firstPicks = [];
-        // Initialize 8 previous pick arrays
-        let previousPick1 = [null, null, null];
-        let previousPick2 = [null, null, null];
-        let previousPick3 = [null, null, null];
-        let previousPick4 = [null, null, null];
-        let previousPick5 = [null, null, null];
-        let previousPick6 = [null, null, null];
-        let previousPick7 = [null, null, null];
-        let previousPick8 = [null, null, null];
+        let draws = [];
 
-        // Initialize 8 previous fireballs
-        let previousFireball1 = null;
-        let previousFireball2 = null;
-        let previousFireball3 = null;
-        let previousFireball4 = null;
-        let previousFireball5 = null;
-        let previousFireball6 = null;
-        let previousFireball7 = null;
-        let previousFireball8 = null;
+        // Initialize previous pick arrays for both sorted and original order
+        let previousSortedPick1 = [null, null, null];
+        let previousSortedPick2 = [null, null, null];
+        let previousSortedPick3 = [null, null, null];
+        let previousSortedPick4 = [null, null, null];
+        let previousSortedPick5 = [null, null, null];
+        let previousSortedPick6 = [null, null, null];
+        let previousSortedPick7 = [null, null, null];
+        let previousSortedPick8 = [null, null, null];
+
+        let previousOriginalPick1 = [null, null, null];
+        let previousOriginalPick2 = [null, null, null];
+        let previousOriginalPick3 = [null, null, null];
+        let previousOriginalPick4 = [null, null, null];
+        let previousOriginalPick5 = [null, null, null];
+        let previousOriginalPick6 = [null, null, null];
+        let previousOriginalPick7 = [null, null, null];
+        let previousOriginalPick8 = [null, null, null];
 
         console.log('Connecting to Scraping Browser...');
         const browser = await puppeteer.connect({
@@ -94,8 +93,9 @@ export async function GET(req) {
 
                 for (let i = 0; i < divsWithClassDfs.length; i++) {
                     const { dateInfo, drawInfo, pick, fireball } = divsWithClassDfs[i];
-                    if (dateInfo?.substring(0, 3) === currentMonth) {
-                        let [firstNumber = null, secondNumber = null, thirdNumber = null] = pick;
+                    if (dateInfo?.substring(0, 3) === 'Dec') {
+                        // Original order numbers
+                        let [originalFirst = null, originalSecond = null, originalThird = null] = pick;
 
                         let r = parseInt(dateInfo?.match(/\d+/)?.[0] || '0')
                         let y = drawInfo?.replace(/[^a-zA-Z]+/g, "") || '';
@@ -105,187 +105,146 @@ export async function GET(req) {
                             r = (r * 2) + 1
                         }
 
-                        // Sort the numbers if they're all valid
-                        if (firstNumber !== null && secondNumber !== null && thirdNumber !== null) {
-                            let numbers = [firstNumber, secondNumber, thirdNumber];
-                            numbers.sort((a, b) => a - b);
-                            [firstNumber, secondNumber, thirdNumber] = numbers;
+                        // Create sorted version
+                        let sortedNumbers = [...pick];
+                        if (originalFirst !== null && originalSecond !== null && originalThird !== null) {
+                            sortedNumbers.sort((a, b) => a - b);
                         }
+                        let [sortedFirst, sortedSecond, sortedThird] = sortedNumbers;
 
-                        // Function to determine movement with null handling
-                        const getMovement = (current, previous) => {
-                            if (current === null || previous === null) return null;
-                            if (current > previous) return 'Up';
-                            if (current < previous) return 'Down';
-                            return 'Equal';
-                        };
-
-                        // Calculate movements with null handling
-                        const movements = {
-                            first: Array(7).fill(null),
-                            second: Array(7).fill(null),
-                            third: Array(7).fill(null)
-                        };
-
-                        // Calculate all movements with null checking
-                        movements.first[0] = getMovement(firstNumber, previousPick1[0]);
-                        movements.second[0] = getMovement(secondNumber, previousPick1[1]);
-                        movements.third[0] = getMovement(thirdNumber, previousPick1[2]);
-
-                        movements.first[1] = getMovement(previousPick1[0], previousPick2[0]);
-                        movements.second[1] = getMovement(previousPick1[1], previousPick2[1]);
-                        movements.third[1] = getMovement(previousPick1[2], previousPick2[2]);
-
-                        movements.first[2] = getMovement(previousPick2[0], previousPick3[0]);
-                        movements.second[2] = getMovement(previousPick2[1], previousPick3[1]);
-                        movements.third[2] = getMovement(previousPick2[2], previousPick3[2]);
-
-                        movements.first[3] = getMovement(previousPick3[0], previousPick4[0]);
-                        movements.second[3] = getMovement(previousPick3[1], previousPick4[1]);
-                        movements.third[3] = getMovement(previousPick3[2], previousPick4[2]);
-
-                        movements.first[4] = getMovement(previousPick4[0], previousPick5[0]);
-                        movements.second[4] = getMovement(previousPick4[1], previousPick5[1]);
-                        movements.third[4] = getMovement(previousPick4[2], previousPick5[2]);
-
-                        movements.first[5] = getMovement(previousPick5[0], previousPick6[0]);
-                        movements.second[5] = getMovement(previousPick5[1], previousPick6[1]);
-                        movements.third[5] = getMovement(previousPick5[2], previousPick6[2]);
-
-                        movements.first[6] = getMovement(previousPick6[0], previousPick7[0]);
-                        movements.second[6] = getMovement(previousPick6[1], previousPick7[1]);
-                        movements.third[6] = getMovement(previousPick6[2], previousPick7[2]);
-
-                        // Create winning combinations only if all numbers are valid
                         const parsedFireball = fireball ? parseInt(fireball) : null;
-                        let winningCombinations = [];
-                        if (firstNumber !== null && secondNumber !== null && thirdNumber !== null) {
-                            if (parsedFireball !== null) {
-                                winningCombinations = [
-                                    `${parsedFireball}${secondNumber}${thirdNumber}`,
-                                    `${firstNumber}${parsedFireball}${thirdNumber}`,
-                                    `${firstNumber}${secondNumber}${parsedFireball}`,
-                                    `${firstNumber}${secondNumber}${thirdNumber}`
-                                ];
-                            } else {
-                                winningCombinations = [`${firstNumber}${secondNumber}${thirdNumber}`];
-                            }
-                        }
 
-                        // Calculate currentDrawSum only if all numbers are valid
-                        const currentDrawSum = (firstNumber !== null && secondNumber !== null && thirdNumber !== null)
-                            ? firstNumber + secondNumber + thirdNumber
+                        // Calculate sums
+                        const sortedDrawSum = (sortedFirst !== null && sortedSecond !== null && sortedThird !== null)
+                            ? sortedFirst + sortedSecond + sortedThird
                             : null;
 
-                        firstPicks.push({
-                            currentFirstNumber: firstNumber,
-                            currentSecondNumber: secondNumber,
-                            currentThirdNumber: thirdNumber,
+                        const originalDrawSum = (originalFirst !== null && originalSecond !== null && originalThird !== null)
+                            ? originalFirst + originalSecond + originalThird
+                            : null;
+
+                        // Create combined data object
+                        draws.push({
+                            // Original order data
+                            originalFirstNumber: originalFirst,
+                            originalSecondNumber: originalSecond,
+                            originalThirdNumber: originalThird,
+                            originalDraw: (originalFirst !== null && originalSecond !== null && originalThird !== null)
+                                ? `${originalFirst}${originalSecond}${originalThird}`
+                                : null,
+                            originalDrawSum,
+                            originalFirstAndSecond: (originalFirst !== null && originalSecond !== null)
+                                ? `${originalFirst}${originalSecond}`
+                                : null,
+                            originalSecondAndThird: (originalSecond !== null && originalThird !== null)
+                                ? `${originalSecond}${originalThird}`
+                                : null,
+                            originalFirstAndThird: (originalFirst !== null && originalThird !== null)
+                                ? `${originalFirst}${originalThird}`
+                                : null,
+
+                            // Previous numbers (original order)
+                            originalPreviousFirst1: previousOriginalPick1[0],
+                            originalPreviousFirst2: previousOriginalPick2[0],
+                            originalPreviousFirst3: previousOriginalPick3[0],
+                            originalPreviousFirst4: previousOriginalPick4[0],
+                            originalPreviousFirst5: previousOriginalPick5[0],
+                            originalPreviousFirst6: previousOriginalPick6[0],
+                            originalPreviousFirst7: previousOriginalPick7[0],
+                            originalPreviousFirst8: previousOriginalPick8[0],
+
+                            originalPreviousSecond1: previousOriginalPick1[1],
+                            originalPreviousSecond2: previousOriginalPick2[1],
+                            originalPreviousSecond3: previousOriginalPick3[1],
+                            originalPreviousSecond4: previousOriginalPick4[1],
+                            originalPreviousSecond5: previousOriginalPick5[1],
+                            originalPreviousSecond6: previousOriginalPick6[1],
+                            originalPreviousSecond7: previousOriginalPick7[1],
+                            originalPreviousSecond8: previousOriginalPick8[1],
+
+                            originalPreviousThird1: previousOriginalPick1[2],
+                            originalPreviousThird2: previousOriginalPick2[2],
+                            originalPreviousThird3: previousOriginalPick3[2],
+                            originalPreviousThird4: previousOriginalPick4[2],
+                            originalPreviousThird5: previousOriginalPick5[2],
+                            originalPreviousThird6: previousOriginalPick6[2],
+                            originalPreviousThird7: previousOriginalPick7[2],
+                            originalPreviousThird8: previousOriginalPick8[2],
+
+                            // Sorted data
+                            sortedFirstNumber: sortedFirst,
+                            sortedSecondNumber: sortedSecond,
+                            sortedThirdNumber: sortedThird,
+                            sortedDraw: (sortedFirst !== null && sortedSecond !== null && sortedThird !== null)
+                                ? `${sortedFirst}${sortedSecond}${sortedThird}`
+                                : null,
+                            sortedDrawSum,
+                            sortedFirstAndSecond: (sortedFirst !== null && sortedSecond !== null)
+                                ? `${sortedFirst}${sortedSecond}`
+                                : null,
+                            sortedSecondAndThird: (sortedSecond !== null && sortedThird !== null)
+                                ? `${sortedSecond}${sortedThird}`
+                                : null,
+                            sortedFirstAndThird: (sortedFirst !== null && sortedThird !== null)
+                                ? `${sortedFirst}${sortedThird}`
+                                : null,
+
+                            // Previous numbers (sorted)
+                            sortedPreviousFirst1: previousSortedPick1[0],
+                            sortedPreviousFirst2: previousSortedPick2[0],
+                            sortedPreviousFirst3: previousSortedPick3[0],
+                            sortedPreviousFirst4: previousSortedPick4[0],
+                            sortedPreviousFirst5: previousSortedPick5[0],
+                            sortedPreviousFirst6: previousSortedPick6[0],
+                            sortedPreviousFirst7: previousSortedPick7[0],
+                            sortedPreviousFirst8: previousSortedPick8[0],
+
+                            sortedPreviousSecond1: previousSortedPick1[1],
+                            sortedPreviousSecond2: previousSortedPick2[1],
+                            sortedPreviousSecond3: previousSortedPick3[1],
+                            sortedPreviousSecond4: previousSortedPick4[1],
+                            sortedPreviousSecond5: previousSortedPick5[1],
+                            sortedPreviousSecond6: previousSortedPick6[1],
+                            sortedPreviousSecond7: previousSortedPick7[1],
+                            sortedPreviousSecond8: previousSortedPick8[1],
+
+                            sortedPreviousThird1: previousSortedPick1[2],
+                            sortedPreviousThird2: previousSortedPick2[2],
+                            sortedPreviousThird3: previousSortedPick3[2],
+                            sortedPreviousThird4: previousSortedPick4[2],
+                            sortedPreviousThird5: previousSortedPick5[2],
+                            sortedPreviousThird6: previousSortedPick6[2],
+                            sortedPreviousThird7: previousSortedPick7[2],
+                            sortedPreviousThird8: previousSortedPick8[2],
+
+                            // Common fields
                             fireball: parsedFireball,
-                            winningCombinations,
-                            currentDraw: (firstNumber !== null && secondNumber !== null && thirdNumber !== null)
-                                ? `${firstNumber}${secondNumber}${thirdNumber}`
-                                : null,
-                            currentDrawSum,
-                            firstAndSecondNumber: (firstNumber !== null && secondNumber !== null)
-                                ? `${firstNumber}${secondNumber}`
-                                : null,
-                            secondAndThirdNumber: (secondNumber !== null && thirdNumber !== null)
-                                ? `${secondNumber}${thirdNumber}`
-                                : null,
-                            firstAndThirdNumber: (firstNumber !== null && thirdNumber !== null)
-                                ? `${firstNumber}${thirdNumber}`
-                                : null,
-
-                            // Previous fireballs with null handling
-                            previousFireball1: previousFireball1 ? parseInt(previousFireball1) : null,
-                            previousFireball2: previousFireball2 ? parseInt(previousFireball2) : null,
-                            previousFireball3: previousFireball3 ? parseInt(previousFireball3) : null,
-                            previousFireball4: previousFireball4 ? parseInt(previousFireball4) : null,
-                            previousFireball5: previousFireball5 ? parseInt(previousFireball5) : null,
-                            previousFireball6: previousFireball6 ? parseInt(previousFireball6) : null,
-                            previousFireball7: previousFireball7 ? parseInt(previousFireball7) : null,
-                            previousFireball8: previousFireball8 ? parseInt(previousFireball8) : null,
-
                             drawDate: dateInfo || null,
                             drawMonth: dateInfo ? dateInfo.substring(0, 3) : null,
                             index: r,
                             time: drawInfo ? drawInfo.replace(/[^a-zA-Z]+/g, "") : null,
                             timestamp: adminDb.firestore.Timestamp.now(),
-
-                            // Movement data
-                            firstNumberMovement: movements.first[0],
-                            previousFirstNumberMovement1: movements.first[1],
-                            previousFirstNumberMovement2: movements.first[2],
-                            previousFirstNumberMovement3: movements.first[3],
-                            previousFirstNumberMovement4: movements.first[4],
-                            previousFirstNumberMovement5: movements.first[5],
-                            previousFirstNumberMovement6: movements.first[6],
-
-                            secondNumberMovement: movements.second[0],
-                            previousSecondNumberMovement1: movements.second[1],
-                            previousSecondNumberMovement2: movements.second[2],
-                            previousSecondNumberMovement3: movements.second[3],
-                            previousSecondNumberMovement4: movements.second[4],
-                            previousSecondNumberMovement5: movements.second[5],
-                            previousSecondNumberMovement6: movements.second[6],
-
-                            thirdNumberMovement: movements.third[0],
-                            previousThirdNumberMovement1: movements.third[1],
-                            previousThirdNumberMovement2: movements.third[2],
-                            previousThirdNumberMovement3: movements.third[3],
-                            previousThirdNumberMovement4: movements.third[4],
-                            previousThirdNumberMovement5: movements.third[5],
-                            previousThirdNumberMovement6: movements.third[6],
-
-                            // Previous numbers
-                            previousFirstNumber1: previousPick1[0],
-                            previousFirstNumber2: previousPick2[0],
-                            previousFirstNumber3: previousPick3[0],
-                            previousFirstNumber4: previousPick4[0],
-                            previousFirstNumber5: previousPick5[0],
-                            previousFirstNumber6: previousPick6[0],
-                            previousFirstNumber7: previousPick7[0],
-                            previousFirstNumber8: previousPick8[0],
-
-                            previousSecondNumber1: previousPick1[1],
-                            previousSecondNumber2: previousPick2[1],
-                            previousSecondNumber3: previousPick3[1],
-                            previousSecondNumber4: previousPick4[1],
-                            previousSecondNumber5: previousPick5[1],
-                            previousSecondNumber6: previousPick6[1],
-                            previousSecondNumber7: previousPick7[1],
-                            previousSecondNumber8: previousPick8[1],
-
-                            previousThirdNumber1: previousPick1[2],
-                            previousThirdNumber2: previousPick2[2],
-                            previousThirdNumber3: previousPick3[2],
-                            previousThirdNumber4: previousPick4[2],
-                            previousThirdNumber5: previousPick5[2],
-                            previousThirdNumber6: previousPick6[2],
-                            previousThirdNumber7: previousPick7[2],
-                            previousThirdNumber8: previousPick8[2],
                         });
 
-                        // Shift all previous picks down
-                        previousPick8 = [...previousPick7];
-                        previousPick7 = [...previousPick6];
-                        previousPick6 = [...previousPick5];
-                        previousPick5 = [...previousPick4];
-                        previousPick4 = [...previousPick3];
-                        previousPick3 = [...previousPick2];
-                        previousPick2 = [...previousPick1];
-                        previousPick1 = [firstNumber, secondNumber, thirdNumber];
+                        // Update previous picks for sorted numbers
+                        previousSortedPick8 = [...previousSortedPick7];
+                        previousSortedPick7 = [...previousSortedPick6];
+                        previousSortedPick6 = [...previousSortedPick5];
+                        previousSortedPick5 = [...previousSortedPick4];
+                        previousSortedPick4 = [...previousSortedPick3];
+                        previousSortedPick3 = [...previousSortedPick2];
+                        previousSortedPick2 = [...previousSortedPick1];
+                        previousSortedPick1 = [sortedFirst, sortedSecond, sortedThird];
 
-                        // Shift all previous fireballs down
-                        previousFireball8 = previousFireball7;
-                        previousFireball7 = previousFireball6;
-                        previousFireball6 = previousFireball5;
-                        previousFireball5 = previousFireball4;
-                        previousFireball4 = previousFireball3;
-                        previousFireball3 = previousFireball2;
-                        previousFireball2 = previousFireball1;
-                        previousFireball1 = fireball;
+                        // Update previous picks for original order
+                        previousOriginalPick8 = [...previousOriginalPick7];
+                        previousOriginalPick7 = [...previousOriginalPick6];
+                        previousOriginalPick6 = [...previousOriginalPick5];
+                        previousOriginalPick5 = [...previousOriginalPick4];
+                        previousOriginalPick4 = [...previousOriginalPick3];
+                        previousOriginalPick3 = [...previousOriginalPick2];
+                        previousOriginalPick2 = [...previousOriginalPick1];
+                        previousOriginalPick1 = [originalFirst, originalSecond, originalThird];
                     }
                 }
             }
@@ -297,21 +256,18 @@ export async function GET(req) {
         const infoCollection = adminDb.firestore().collection('draws');
         const batch = adminDb.firestore().batch();
 
-        firstPicks.forEach(numObj => {
+        // Write the combined data
+        draws.forEach(draw => {
             const docRef = infoCollection.doc();
-            batch.set(docRef, numObj);
-        });
-        console.log(firstPicks.length)
-
-        batch.commit().then(() => {
-            console.log('Batch write succeeded');
-        }).catch(error => {
-            console.log(error.message)
-            console.error('Batch write failed:');
+            batch.set(docRef, draw);
         });
 
-        let response = 'good'
-        return new Response(JSON.stringify(response), {
+        console.log('Total documents to write:', draws.length);
+
+        await batch.commit();
+        console.log('Batch write succeeded');
+
+        return new Response(JSON.stringify('good'), {
             status: 200,
             headers: {
                 'Content-Type': 'application/json',
@@ -319,7 +275,7 @@ export async function GET(req) {
             },
         });
     } catch (error) {
-        console.error('Error calling Lambda:', error.message);
+        console.error('Error:', error.message);
 
         if (error.code === 'ECONNABORTED') {
             return new Response(JSON.stringify({ error: 'Request timed out' }), {

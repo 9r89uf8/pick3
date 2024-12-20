@@ -14,6 +14,7 @@ import {
   IconButton,
   Collapse,
 } from '@mui/material';
+import ConnectionsVisualizer from "@/app/components/ConnectionsVisualizer";
 import { alpha, styled } from "@mui/material/styles";
 import Paper from "@mui/material/Paper";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -99,6 +100,7 @@ const HomePage = () => {
   const handlePlay = async () => {
     setLoading(true);
     await playNums({ excludedNumbers });
+    // await checkDraws();
     setLoading(false);
   };
 
@@ -177,6 +179,7 @@ const HomePage = () => {
                 </Box>
             )}
           </Item>
+
 
           <Box sx={{ textAlign: 'center', mt: 1 }}>
             <ExpandButton

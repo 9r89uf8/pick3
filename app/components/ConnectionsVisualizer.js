@@ -1,45 +1,47 @@
 import React from 'react';
-import { Box, styled } from '@mui/material';
 
-const VisualizerContainer = styled(Box)(({ theme }) => ({
-    width: '100%',
-    height: '500px', // Increased height
-    marginBottom: theme.spacing(4),
-    backgroundColor: theme.palette.grey[50],
-    borderRadius: theme.shape.borderRadius,
-    padding: theme.spacing(2),
-}));
-
-const ConnectionsVisualizer = ({ combinations }) => {
-    const columnRanges = [
-        { min: 0, max: 3 },  // First column range
-        { min: 2, max: 7 },  // Second column range
-        { min: 6, max: 9 },  // Third column range
-    ];
-
-    // Define total height and margins
-    const totalHeight = 600;
-    const margin = 30;
+const ConnectionsVisualizer = ({numbers}) => {
+    const totalHeight = 780;
+    const totalWidth = 650;
+    const margin = 39;
     const usableHeight = totalHeight - 2 * margin;
+    const numberXOffset = 46;
+    const numberYOffset = 12;
 
-    // Calculate the vertical position for a number in its column
-    const getYPosition = (number, columnIndex) => {
-        const { min, max } = columnRanges[columnIndex];
-        const range = max - min;
-        const position = (number - min) / range;
-        // Invert the position since SVG coordinates go from top to bottom
-        return totalHeight - (position * usableHeight + margin); // Adjusted for new height
+    const usedNumbers = numbers.reduce((acc, combination) => {
+        combination.forEach((num, index) => {
+            if (!acc[index]) acc[index] = new Set();
+            acc[index].add(num);
+        });
+        return acc;
+    }, []);
+
+    const getYPosition = (number) => {
+        const position = number / 9;
+        return totalHeight - (position * usableHeight + margin) + 5;
     };
 
-    // Get X position for each column
     const getXPosition = (columnIndex) => {
-        return 100 + columnIndex * 150; // 100px margin on left, 150px between columns
+        return 130 + columnIndex * 195;
+    };
+
+    const colors = [
+        '#3B82F6', // blue
+        '#10B981', // emerald
+        '#F59E0B', // amber
+        '#EF4444', // red
+        '#8B5CF6', // purple
+        '#EC4899'  // pink
+    ];
+
+    const isNumberUsed = (number, columnIndex) => {
+        return usedNumbers[columnIndex]?.has(number);
     };
 
     return (
-        <VisualizerContainer>
+        <div style={{ width: '100%', maxWidth: '1040px', margin: '0 auto' }}>
             <svg
-                viewBox={`0 0 500 ${totalHeight}`} // Adjusted viewBox height
+                viewBox={`0 0 ${totalWidth} ${totalHeight}`}
                 style={{ width: '100%', height: '100%' }}
             >
                 {/* Draw vertical lines for each column */}
@@ -47,79 +49,81 @@ const ConnectionsVisualizer = ({ combinations }) => {
                     <line
                         key={`vline-${columnIndex}`}
                         x1={getXPosition(columnIndex)}
-                        y1={margin} // Adjusted for new height
+                        y1={margin}
                         x2={getXPosition(columnIndex)}
-                        y2={totalHeight - margin} // Adjusted for new height
+                        y2={totalHeight - margin}
                         stroke="#e5e7eb"
-                        strokeWidth="2"
+                        strokeWidth="4.6"
                     />
                 ))}
 
-                {/* Draw the numbers for each column */}
-                {columnRanges.map((range, columnIndex) => {
-                    const numbers = Array.from(
-                        { length: range.max - range.min + 1 },
-                        (_, i) => range.min + i
-                    );
-                    return numbers.map((number) => (
-                        <text
-                            key={`text-${columnIndex}-${number}`}
-                            x={getXPosition(columnIndex)}
-                            y={getYPosition(number, columnIndex)}
-                            textAnchor="middle"
-                            style={{
-                                fill: '#666',
-                                fontSize: '3rem', // Adjusted font size if needed
-                                fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-                            }}
-                        >
-                            {number}
-                        </text>
-                    ));
-                })}
+                {/* Draw connections for each combination FIRST */}
+                {numbers.map((combination, combIndex) => (
+                    <g key={`combination-${combIndex}`}>
+                        {/* Line from first to second number */}
+                        <line
+                            x1={getXPosition(0)}
+                            y1={getYPosition(combination[0])}
+                            x2={getXPosition(1)}
+                            y2={getYPosition(combination[1])}
+                            stroke={colors[combIndex % colors.length]}
+                            strokeWidth="4.6"
+                            strokeOpacity="0.6"
+                        />
+                        {/* Line from second to third number */}
+                        <line
+                            x1={getXPosition(1)}
+                            y1={getYPosition(combination[1])}
+                            x2={getXPosition(2)}
+                            y2={getYPosition(combination[2])}
+                            stroke={colors[combIndex % colors.length]}
+                            strokeWidth="4.6"
+                            strokeOpacity="0.6"
+                        />
+                    </g>
+                ))}
 
-                {/* Draw connections for each combination */}
-                {combinations.map((combination, combIndex) => {
-                    // Using MUI default palette colors
-                    const colors = ['#1976d2', '#2e7d32', '#ed6c02', '#000000']; // primary, success, warning
-                    return (
-                        <g key={`combination-${combIndex}`}>
-                            {/* Line from first to second number */}
-                            <line
-                                x1={getXPosition(0)}
-                                y1={getYPosition(combination.numbers[0], 0)}
-                                x2={getXPosition(1)}
-                                y2={getYPosition(combination.numbers[1], 1)}
-                                stroke={colors[combIndex]}
-                                strokeWidth="2"
-                                strokeOpacity="0.6"
-                            />
-                            {/* Line from second to third number */}
-                            <line
-                                x1={getXPosition(1)}
-                                y1={getYPosition(combination.numbers[1], 1)}
-                                x2={getXPosition(2)}
-                                y2={getYPosition(combination.numbers[2], 2)}
-                                stroke={colors[combIndex]}
-                                strokeWidth="2"
-                                strokeOpacity="0.6"
-                            />
-                            {/* Highlight selected numbers */}
-                            {combination.numbers.map((number, numIndex) => (
+                {/* Draw all numbers and circles for each column LAST */}
+                {[0, 1, 2].map((columnIndex) => (
+                    <React.Fragment key={`col-${columnIndex}`}>
+                        {[...Array(10)].map((_, i) => (
+                            <g key={`text-${columnIndex}-${i}`}>
+                                {/* White circle background */}
                                 <circle
-                                    key={`point-${combIndex}-${numIndex}`}
-                                    cx={getXPosition(numIndex)}
-                                    cy={getYPosition(number, numIndex)}
-                                    r="6"
-                                    fill={colors[combIndex]}
-                                    opacity="0.8"
+                                    cx={getXPosition(columnIndex) + numberXOffset}
+                                    cy={getYPosition(i) - 14 + numberYOffset}
+                                    r="22"
+                                    fill="white"
                                 />
-                            ))}
-                        </g>
-                    );
-                })}
+                                <text
+                                    x={getXPosition(columnIndex) + numberXOffset}
+                                    y={getYPosition(i) + numberYOffset}
+                                    textAnchor="middle"
+                                    style={{
+                                        fill: isNumberUsed(i, columnIndex) ? '#3B82F6' : '#CBD5E1',
+                                        fontSize: '41px',
+                                        fontFamily: 'sans-serif'
+                                    }}
+                                >
+                                    {i}
+                                </text>
+                            </g>
+                        ))}
+                        {/* Draw highlight circles for selected numbers on top */}
+                        {numbers.map((combination, combIndex) => (
+                            <circle
+                                key={`point-${combIndex}-${combination[columnIndex]}`}
+                                cx={getXPosition(columnIndex)}
+                                cy={getYPosition(combination[columnIndex])}
+                                r="10.8"
+                                fill={colors[combIndex % colors.length]}
+                                opacity="0.8"
+                            />
+                        ))}
+                    </React.Fragment>
+                ))}
             </svg>
-        </VisualizerContainer>
+        </div>
     );
 };
 
