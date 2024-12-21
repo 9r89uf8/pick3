@@ -93,7 +93,7 @@ export async function GET(req) {
 
                 for (let i = 0; i < divsWithClassDfs.length; i++) {
                     const { dateInfo, drawInfo, pick, fireball } = divsWithClassDfs[i];
-                    if (dateInfo?.substring(0, 3) === 'Dec') {
+                    if (dateInfo?.substring(0, 3) === currentMonth) {
                         // Original order numbers
                         let [originalFirst = null, originalSecond = null, originalThird = null] = pick;
 

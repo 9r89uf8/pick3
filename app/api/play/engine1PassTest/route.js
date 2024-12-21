@@ -27,20 +27,59 @@ export async function GET() {
 
 
         for (let i = 1; i < draws.length; i++) {
-            // Extract the last 8 first numbers
-            let latestDraw = draws[i];
-            if(latestDraw.currentFirstNumber<=3){
-                if(latestDraw.currentSecondNumber>=2&&latestDraw.currentSecondNumber<=7){
-                    if(latestDraw.currentThirdNumber>=6&&latestDraw.currentThirdNumber<=9){
-                        totalCorrectPredictions += 1;
+            let draw = draws[i];
+            let nums = [
+                draw.originalFirstNumber,
+                draw.originalSecondNumber,
+                draw.originalThirdNumber
+            ];
+
+            // Get possible ranges for each number
+            let numberRanges = nums.map(num => {
+                let ranges = [];
+                if (num >= 0 && num <= 3) ranges.push(1);
+                if (num >= 2 && num <= 7) ranges.push(2);
+                if (num >= 6 && num <= 9) ranges.push(3);
+                return ranges;
+            });
+
+            // Try to find valid assignments
+            let rangeAssignments = new Map();
+            let numberAssignments = new Map();
+
+            function tryAssignments(index) {
+                if (index === nums.length) {
+                    return rangeAssignments.size === 3 &&
+                        [1, 2, 3].every(r => rangeAssignments.has(r));
+                }
+
+                const currentNumber = nums[index];
+                const possibleRanges = numberRanges[index];
+
+                for (const range of possibleRanges) {
+                    if (!rangeAssignments.has(range)) {
+                        rangeAssignments.set(range, currentNumber);
+                        numberAssignments.set(currentNumber, range);
+
+                        if (tryAssignments(index + 1)) {
+                            return true;
+                        }
+
+                        rangeAssignments.delete(range);
+                        numberAssignments.delete(currentNumber);
                     }
                 }
+
+                return tryAssignments(index + 1);
             }
 
-
+            if (tryAssignments(0)) {
+                totalCorrectPredictions += 1;
+            }
         }
 
 
+        console.log('hello')
         console.log(draws.length)
         console.log(totalCorrectPredictions)
 
