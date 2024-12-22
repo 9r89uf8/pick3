@@ -138,9 +138,9 @@ const HomePage = () => {
             </Typography>
 
             <Stack spacing={3}>
-              {renderNumberSelection('first', [0, 1, 2], 'First Position')}
-              {renderNumberSelection('second', [3, 4, 5, 6], 'Second Position')}
-              {renderNumberSelection('third', [7, 8, 9], 'Third Position')}
+              {renderNumberSelection('first', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'First Position')}
+              {renderNumberSelection('second', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'Second Position')}
+              {renderNumberSelection('third', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 'Third Position')}
             </Stack>
 
             <Button

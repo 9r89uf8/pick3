@@ -84,7 +84,18 @@ function isInLast50Draws(combination, last50Combinations) {
     );
 }
 
-function generateDraws(latestDraw, last50Combinations) {
+// First, let's add a function to check if a draw contains excluded numbers
+function hasExcludedNumbers(draw, excludedNumbers) {
+    // Check first position
+    if (excludedNumbers.first.includes(draw[0])) return true;
+    // Check second position
+    if (excludedNumbers.second.includes(draw[1])) return true;
+    // Check third position
+    if (excludedNumbers.third.includes(draw[2])) return true;
+    return false;
+}
+
+function generateDraws(latestDraw, last50Combinations, excludedNumbers = { first: [], second: [], third: [] }) {
     const draws = [];
     const numberCounts = new Map(); // Track overall number frequency
     const positionCounts = [new Map(), new Map(), new Map()]; // Track frequency per position
@@ -98,7 +109,7 @@ function generateDraws(latestDraw, last50Combinations) {
         attempts++;
         const draw = generateDraw();
 
-        // Check if the draw satisfies frequency limits, similarity, and last 50 draws
+        // Check if the draw satisfies all conditions including excluded numbers
         const canAdd = draw.every((num, pos) => {
                 const totalCount = numberCounts.get(num) || 0;
                 const posCount = positionCounts[pos].get(num) || 0;
@@ -107,7 +118,8 @@ function generateDraws(latestDraw, last50Combinations) {
                     posCount < MAX_POSITION_APPEARANCES;
             }) &&
             !tooSimilarToPrevious(draw, latestDraw) &&
-            !isInLast50Draws(draw, last50Combinations);
+            !isInLast50Draws(draw, last50Combinations) &&
+            !hasExcludedNumbers(draw, excludedNumbers); // Add check for excluded numbers
 
         if (canAdd) {
             draws.push(draw);
@@ -128,6 +140,7 @@ function generateDraws(latestDraw, last50Combinations) {
 
 export async function POST(req) {
     try {
+        const { excludedNumbers = { first: [], second: [], third: [] } } = await req.json();
         let month = getCurrentMonth();
         const firestore = adminDb.firestore();
 
@@ -160,7 +173,7 @@ export async function POST(req) {
         });
 
         const result = {
-            numbers: generateDraws(latestDraw, last50Combinations)
+            numbers: generateDraws(latestDraw, last50Combinations, excludedNumbers)
         };
 
         return new Response(JSON.stringify(result.numbers), {
