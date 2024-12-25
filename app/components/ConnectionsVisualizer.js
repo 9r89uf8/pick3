@@ -44,7 +44,9 @@ const ConnectionsVisualizer = ({numbers}) => {
         '#F59E0B', // amber
         '#EF4444', // red
         '#8B5CF6', // purple
-        '#EC4899'  // pink
+        '#EC4899' , // pink
+        '#ffffff',  // pink
+        '#ffdd00'  // pink
     ];
 
     const isNumberUsed = (number, columnIndex) => {
