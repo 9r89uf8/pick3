@@ -41,102 +41,53 @@ export async function GET() {
 
         // Extract the last 8 first numbers
         const last8FirstNumbers = [
-            latestDraw.currentFirstNumber,
-            latestDraw.previousFirstNumber1,
-            latestDraw.previousFirstNumber2,
-            latestDraw.previousFirstNumber3,
-            latestDraw.previousFirstNumber4,
-            latestDraw.previousFirstNumber5,
-            latestDraw.previousFirstNumber6,
-            latestDraw.previousFirstNumber7,
-            latestDraw.previousFirstNumber8
+            latestDraw.originalFirstNumber,
+            latestDraw.originalPreviousFirst1,
+            latestDraw.originalPreviousFirst2,
+            latestDraw.originalPreviousFirst3,
+            latestDraw.originalPreviousFirst4,
+            latestDraw.originalPreviousFirst5,
+            latestDraw.originalPreviousFirst6,
+            latestDraw.originalPreviousFirst7,
+            latestDraw.originalPreviousFirst8
         ].filter(num => num !== undefined);
 
         // Extract the last 8 second numbers
         const last8SecondNumbers = [
-            latestDraw.currentSecondNumber,
-            latestDraw.previousSecondNumber1,
-            latestDraw.previousSecondNumber2,
-            latestDraw.previousSecondNumber3,
-            latestDraw.previousSecondNumber4,
-            latestDraw.previousSecondNumber5,
-            latestDraw.previousSecondNumber6,
-            latestDraw.previousSecondNumber7,
-            latestDraw.previousSecondNumber8
+            latestDraw.originalSecondNumber,
+            latestDraw.originalPreviousSecond1,
+            latestDraw.originalPreviousSecond2,
+            latestDraw.originalPreviousSecond3,
+            latestDraw.originalPreviousSecond4,
+            latestDraw.originalPreviousSecond5,
+            latestDraw.originalPreviousSecond6,
+            latestDraw.originalPreviousSecond7,
+            latestDraw.originalPreviousSecond8
         ].filter(num => num !== undefined);
 
         // Extract the last 8 third numbers
         const last8ThirdNumbers = [
-            latestDraw.currentThirdNumber,
-            latestDraw.previousThirdNumber1,
-            latestDraw.previousThirdNumber2,
-            latestDraw.previousThirdNumber3,
-            latestDraw.previousThirdNumber4,
-            latestDraw.previousThirdNumber5,
-            latestDraw.previousThirdNumber6,
-            latestDraw.previousThirdNumber7,
-            latestDraw.previousThirdNumber8
+            latestDraw.originalThirdNumber,
+            latestDraw.originalPreviousThird1,
+            latestDraw.originalPreviousThird2,
+            latestDraw.originalPreviousThird3,
+            latestDraw.originalPreviousThird4,
+            latestDraw.originalPreviousThird5,
+            latestDraw.originalPreviousThird6,
+            latestDraw.originalPreviousThird7,
+            latestDraw.originalPreviousThird8
         ].filter(num => num !== undefined);
 
-        // Extract all movements for first numbers
-        const lastMovementsFirstNumber = [
-            latestDraw.firstNumberMovement,
-            latestDraw.previousFirstNumberMovement1,
-            latestDraw.previousFirstNumberMovement2,
-            latestDraw.previousFirstNumberMovement3,
-            latestDraw.previousFirstNumberMovement4,
-            latestDraw.previousFirstNumberMovement5,
-            latestDraw.previousFirstNumberMovement6
-        ].filter(movement => movement !== undefined);
 
-        // Extract all movements for second numbers
-        const lastMovementsSecondNumber = [
-            latestDraw.secondNumberMovement,
-            latestDraw.previousSecondNumberMovement1,
-            latestDraw.previousSecondNumberMovement2,
-            latestDraw.previousSecondNumberMovement3,
-            latestDraw.previousSecondNumberMovement4,
-            latestDraw.previousSecondNumberMovement5,
-            latestDraw.previousSecondNumberMovement6
-        ].filter(movement => movement !== undefined);
-
-        // Extract all movements for third numbers
-        const lastMovementsThirdNumber = [
-            latestDraw.thirdNumberMovement,
-            latestDraw.previousThirdNumberMovement1,
-            latestDraw.previousThirdNumberMovement2,
-            latestDraw.previousThirdNumberMovement3,
-            latestDraw.previousThirdNumberMovement4,
-            latestDraw.previousThirdNumberMovement5,
-            latestDraw.previousThirdNumberMovement6
-        ].filter(movement => movement !== undefined);
-
-        // Extract fireball numbers
-        const lastFireballs = [
-            latestDraw.fireball,
-            latestDraw.previousFireball1,
-            latestDraw.previousFireball2,
-            latestDraw.previousFireball3,
-            latestDraw.previousFireball4,
-            latestDraw.previousFireball5,
-            latestDraw.previousFireball6,
-            latestDraw.previousFireball7,
-            latestDraw.previousFireball8
-        ].filter(num => num !== undefined);
 
         const display = {
             last8FirstNumbers,
             last8SecondNumbers,
             last8ThirdNumbers,
-            lastMovementsFirstNumber,
-            lastMovementsSecondNumber,
-            lastMovementsThirdNumber,
-            lastFireballs,
             latestDrawDate: latestDraw.drawDate,
             latestDrawTime: latestDraw.time,
-            winningCombinations: latestDraw.winningCombinations,
-            currentDraw: latestDraw.currentDraw,
-            currentDrawSum: latestDraw.currentDrawSum
+            currentDraw: latestDraw.originalDraw,
+            currentDrawSum: latestDraw.originalDrawSum
         };
 
         const displaysCollection = firestore.collection("displays");

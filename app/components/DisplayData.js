@@ -53,10 +53,6 @@ const DisplayData = () => {
     const secondNumbers = displayData.last8SecondNumbers.slice().reverse();
     const thirdNumbers = displayData.last8ThirdNumbers.slice().reverse();
 
-    const movementFirst = displayData.lastMovementsFirstNumber.slice().reverse();
-    const movementSecond = displayData.lastMovementsSecondNumber.slice().reverse();
-    const movementThird = displayData.lastMovementsThirdNumber.slice().reverse();
-
     const data = firstNumbers.map((_, index) => ({
         name: index + 1,
         firstNumber: firstNumbers[index],
@@ -64,13 +60,6 @@ const DisplayData = () => {
         thirdNumber: thirdNumbers[index]
     }));
 
-    const movementMap = { Up: 1, Equal: 0, Down: -1 };
-    const movementData = movementFirst.map((_, index) => ({
-        name: index + 1,
-        firstMovement: movementMap[movementFirst[index]],
-        secondMovement: movementMap[movementSecond[index]],
-        thirdMovement: movementMap[movementThird[index]],
-    }));
 
     const update = async () => {
         await createDisplay();
@@ -151,71 +140,6 @@ const DisplayData = () => {
                                 dataKey="thirdNumber"
                                 stroke="#ffc658"
                                 name="Third Number"
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </Box>
-            </Paper>
-
-            {/* Movement Chart */}
-            <Paper sx={{ p: 2, mb: 3, width: '100%', height: '400px' }}>
-                <Typography variant="h6" gutterBottom>
-                    Number Movement Patterns
-                </Typography>
-                <Box sx={{ width: '100%', height: 'calc(100% - 40px)' }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                            data={movementData}
-                            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis
-                                domain={[-1, 1]}
-                                ticks={[-1, 0, 1]}
-                                tickFormatter={(value) => {
-                                    if (value === -1) return 'Down';
-                                    if (value === 0) return 'Equal';
-                                    if (value === 1) return 'Up';
-                                    return '';
-                                }}
-                            />
-                            <Tooltip
-                                formatter={(value) => {
-                                    if (value === -1) return 'Down';
-                                    if (value === 0) return 'Equal';
-                                    if (value === 1) return 'Up';
-                                    return '';
-                                }}
-                            />
-                            <Legend
-                                formatter={(value) => {
-                                    if (value === 'firstMovement') return 'First Number Movement';
-                                    if (value === 'secondMovement') return 'Second Number Movement';
-                                    if (value === 'thirdMovement') return 'Third Number Movement';
-                                    return value;
-                                }}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="firstMovement"
-                                stroke="#c1121f"
-                                name="firstMovement"
-                                strokeDasharray="5 5"
-                                strokeWidth={2}
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="secondMovement"
-                                stroke="#82ca9d"
-                                fill="#82ca9d"
-                                name="secondMovement"
-                            />
-                            <Line
-                                type="monotone"
-                                dataKey="thirdMovement"
-                                stroke="#ffc658"
-                                name="thirdMovement"
                             />
                         </LineChart>
                     </ResponsiveContainer>
