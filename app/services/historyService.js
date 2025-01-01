@@ -25,7 +25,7 @@ export const createHistory = async (formData) => {
 export const createDisplay = async () => {
     const display = useStore.getState().setDisplay;
     try {
-        const response = await fetch('/api/displayData/create', {
+        const response = await fetch('/api/displayData/permutations', {
             method: 'GET',
             cache: 'no-store'
         });

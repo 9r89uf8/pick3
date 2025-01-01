@@ -209,7 +209,7 @@ const HomePage = () => {
             </Item>
 
             {showDashboard && <DisplayData />}
-            {showDashboard && <ProbabilityDisplay />}
+            {/*{showDashboard && <ProbabilityDisplay />}*/}
           </Collapse>
 
           {posts.length > 0 ? (

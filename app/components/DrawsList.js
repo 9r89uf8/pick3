@@ -15,6 +15,7 @@ import {
     Cancel,
     Today,
     AccessTime,
+    SwapHoriz
 } from '@mui/icons-material';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -57,6 +58,13 @@ const PatternChip = styled(Chip)(({ isvalid, theme }) => ({
     marginTop: theme.spacing(1),
 }));
 
+const PermutationChip = styled(Chip)(({ theme }) => ({
+    backgroundColor: alpha(theme.palette.info.main, 0.9),
+    color: '#ffffff',
+    fontWeight: 'bold',
+    marginTop: theme.spacing(1),
+}));
+
 const DrawList = ({ draws }) => {
     const RANGES = {
         range1: { min: 0, max: 3, label: '[0-3]' },
@@ -70,6 +78,21 @@ const DrawList = ({ draws }) => {
         if (num >= RANGES.range2.min && num <= RANGES.range2.max) matches.push('range2');
         if (num >= RANGES.range3.min && num <= RANGES.range3.max) matches.push('range3');
         return matches;
+    };
+
+
+    const determinePermutation = (numbers) => {
+        const nums = numbers.map(n => parseInt(n));
+        const sortedNums = [...nums].sort((a, b) => a - b);
+
+        // Create a mapping of number to its category (L, M, H) based on its relative position
+        const categoryMap = new Map();
+        categoryMap.set(sortedNums[0], 'L');  // lowest number
+        categoryMap.set(sortedNums[1], 'M');  // middle number
+        categoryMap.set(sortedNums[2], 'H');  // highest number
+
+        // Map each original number to its category
+        return nums.map(num => categoryMap.get(num)).join('-');
     };
 
     const analyzeRangePattern = (numbers) => {
@@ -134,6 +157,7 @@ const DrawList = ({ draws }) => {
                     item.originalThirdNumber.toString()
                 ];
                 const analysis = analyzeRangePattern(numbers);
+                const permutation = determinePermutation(numbers);
 
                 return (
                     <Grid item xs={12} sm={6} md={4} key={index}>
@@ -175,6 +199,11 @@ const DrawList = ({ draws }) => {
                                     <PatternChip
                                         label={analysis.pattern}
                                         isvalid={analysis.isValid.toString()}
+                                    />
+
+                                    <PermutationChip
+                                        icon={<SwapHoriz />}
+                                        label={`Pattern: ${permutation}`}
                                     />
 
                                     <Typography variant="body2" color="white" sx={{ mt: 1, textAlign: 'center' }}>

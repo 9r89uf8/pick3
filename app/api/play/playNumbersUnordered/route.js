@@ -206,7 +206,6 @@ function generateExtraDraws(latestDraw, last50Combinations, excludedNumbers = { 
     // Use the specified permutations for extra draws
     const extraPermutations = [
         ["L","H","M"],
-        ["M","L","H"],
         ["M","H","L"],
         ["H","L","M"]
     ];

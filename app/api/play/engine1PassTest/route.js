@@ -4,6 +4,33 @@ import {adminDb} from '@/app/utils/firebaseAdmin';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// ======================
+// Checks against previous draw
+// ======================
+function tooSimilarToPrevious(combination, latestDraw) {
+    if (!latestDraw) return false; // If there's no "latestDraw" data, skip.
+
+    let found = false;
+    const c = combination;
+
+
+    // previous1
+    if (c.originalFirstNumber === latestDraw.originalPreviousFirst1 && c.originalSecondNumber === latestDraw.originalPreviousSecond1) found = true;
+    if (c.originalFirstNumber === latestDraw.originalPreviousFirst1 && c.originalThirdNumber === latestDraw.originalPreviousThird1) found = true;
+    if (c.originalSecondNumber === latestDraw.originalPreviousSecond1 && c.originalThirdNumber === latestDraw.originalPreviousThird1) found = true;
+
+    // previous2
+    if (c.originalFirstNumber === latestDraw.originalPreviousFirst2 && c.originalSecondNumber === latestDraw.originalPreviousSecond2) found = true;
+    if (c.originalFirstNumber === latestDraw.originalPreviousFirst2 && c.originalThirdNumber === latestDraw.originalPreviousThird2) found = true;
+    if (c.originalSecondNumber === latestDraw.originalPreviousSecond2 && c.originalThirdNumber === latestDraw.originalPreviousThird2) found = true;
+
+    // previous3
+    if (c.originalFirstNumber === latestDraw.originalPreviousFirst3 && c.originalSecondNumber === latestDraw.originalPreviousSecond3) found = true;
+    if (c.originalFirstNumber === latestDraw.originalPreviousFirst3 && c.originalThirdNumber === latestDraw.originalPreviousThird3) found = true;
+    if (c.originalSecondNumber === latestDraw.originalPreviousSecond3 && c.originalThirdNumber === latestDraw.originalPreviousThird3) found = true;
+
+    return found;
+}
 
 export async function GET() {
     try {
@@ -73,7 +100,8 @@ export async function GET() {
                 return tryAssignments(index + 1);
             }
 
-            if (tryAssignments(0)) {
+            let rr = tooSimilarToPrevious(draw, draw)
+            if (tryAssignments(0)&&!rr) {
                 totalCorrectPredictions += 1;
             }
         }
