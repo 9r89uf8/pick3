@@ -21,6 +21,15 @@ import {
     Bar,
 } from 'recharts';
 import { getDisplayData, createDisplay } from '@/app/services/historyService';
+import PermutationDisplay from "@/app/components/PermutationDisplay";
+const PERMUTATION_COLORS = {
+    'L-M-H': '#FF6B6B',
+    'L-H-M': '#4ECDC4',
+    'M-L-H': '#45B7D1',
+    'M-H-L': '#96CEB4',
+    'H-L-M': '#FFEEAD',
+    'H-M-L': '#D4A5A5'
+};
 
 const DisplayData = () => {
     const displayData = useStore((state) => state.display);
@@ -149,7 +158,6 @@ const DisplayData = () => {
                 </Grid>
             </Paper>
 
-
             {/* Permutation Counts Chart */}
             <Paper sx={{ p: 2 }}>
                 <Typography variant="h6" gutterBottom>
@@ -262,6 +270,7 @@ const DisplayData = () => {
                     </Grid>
                 </Grid>
             </Paper>
+            <PermutationDisplay displayData={displayData}/>
         </Box>
     );
 };
