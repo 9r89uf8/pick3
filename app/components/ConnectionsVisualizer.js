@@ -26,31 +26,35 @@ const ConnectionsVisualizer = ({numbers}) => {
     };
 
     const getNumberXPosition = (columnIndex) => {
-        // For the first column, position numbers on the left
         if (columnIndex === 0) {
             return getXPosition(columnIndex) - numberXOffset;
         }
-        // For the middle column, position numbers directly above
         if (columnIndex === 1) {
             return getXPosition(columnIndex);
         }
-        // For the last column, keep the right-side positioning
         return getXPosition(columnIndex) + numberXOffset;
     };
 
     const colors = [
-        '#3B82F6', // blue
-        '#10B981', // emerald
-        '#F59E0B', // amber
+        '#2db101', // blue
+        '#f309d3', // emerald
+        '#f5a30b', // amber
         '#EF4444', // red
         '#8B5CF6', // purple
-        '#EC4899' , // pink
-        '#ffffff',  // pink
-        '#ffdd00'  // pink
+        '#EC4899', // pink
+        '#ffffff', // white
+        '#ffdd00'  // yellow
     ];
 
     const isNumberUsed = (number, columnIndex) => {
         return usedNumbers[columnIndex]?.has(number);
+    };
+
+    const shouldHaveSpecialFill = (number, columnIndex) => {
+        if (columnIndex === 0) return number >= 0 && number <= 3;
+        if (columnIndex === 1) return number >= 2 && number <= 7;
+        if (columnIndex === 2) return number >= 6 && number <= 9;
+        return false;
     };
 
     return (
@@ -117,14 +121,14 @@ const ConnectionsVisualizer = ({numbers}) => {
                                     cx={getNumberXPosition(columnIndex)}
                                     cy={getYPosition(i) - 28 + numberYOffset}
                                     r="45"
-                                    fill="white"
+                                    fill={shouldHaveSpecialFill(i, columnIndex) ? '#3B82F6' : 'white'}
                                 />
                                 <text
                                     x={getNumberXPosition(columnIndex)}
                                     y={getYPosition(i) + numberYOffset}
                                     textAnchor="middle"
                                     style={{
-                                        fill: isNumberUsed(i, columnIndex) ? '#3B82F6' : '#CBD5E1',
+                                        fill: isNumberUsed(i, columnIndex) ? '#f8f8fa' : '#c3c3c3',
                                         fontSize: '85px',
                                         fontFamily: 'sans-serif'
                                     }}

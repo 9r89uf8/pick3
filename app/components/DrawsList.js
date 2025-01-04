@@ -6,7 +6,6 @@ import {
     Grid,
     Box,
     Chip,
-    Tooltip,
     styled,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -15,7 +14,6 @@ import {
     Cancel,
     Today,
     AccessTime,
-    SwapHoriz
 } from '@mui/icons-material';
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -33,13 +31,13 @@ const StyledCard = styled(Card)(({ theme }) => ({
     },
 }));
 
-const NumberBox = styled(Box)(({ assignedrange, theme }) => ({
+const NumberBox = styled(Box)(({ isvalid, theme }) => ({
     padding: theme.spacing(1),
     borderRadius: theme.spacing(1),
-    backgroundColor: assignedrange
+    backgroundColor: isvalid
         ? alpha(theme.palette.success.main, 0.2)
         : alpha(theme.palette.error.main, 0.1),
-    border: `1px solid ${assignedrange
+    border: `1px solid ${isvalid
         ? theme.palette.success.main
         : theme.palette.error.main}`,
     display: 'flex',
@@ -49,8 +47,8 @@ const NumberBox = styled(Box)(({ assignedrange, theme }) => ({
     minWidth: '60px',
 }));
 
-const PatternChip = styled(Chip)(({ isvalid, theme }) => ({
-    backgroundColor: isvalid === 'true'
+const StatusChip = styled(Chip)(({ isvalid, theme }) => ({
+    backgroundColor: isvalid
         ? alpha(theme.palette.success.main, 0.9)
         : alpha(theme.palette.error.main, 0.9),
     color: '#ffffff',
@@ -58,106 +56,31 @@ const PatternChip = styled(Chip)(({ isvalid, theme }) => ({
     marginTop: theme.spacing(1),
 }));
 
-const PermutationChip = styled(Chip)(({ theme }) => ({
-    backgroundColor: alpha(theme.palette.info.main, 0.9),
-    color: '#ffffff',
-    fontWeight: 'bold',
-    marginTop: theme.spacing(1),
-}));
-
 const DrawList = ({ draws }) => {
-    const RANGES = {
-        range1: { min: 0, max: 3, label: '[0-3]' },
-        range2: { min: 2, max: 7, label: '[2-7]' },
-        range3: { min: 6, max: 9, label: '[6-9]' }
-    };
+    const validateNumbers = (numbers) => {
+        const [first, second, third] = numbers.map(Number);
 
-    const getNumberRanges = (num) => {
-        const matches = [];
-        if (num >= RANGES.range1.min && num <= RANGES.range1.max) matches.push('range1');
-        if (num >= RANGES.range2.min && num <= RANGES.range2.max) matches.push('range2');
-        if (num >= RANGES.range3.min && num <= RANGES.range3.max) matches.push('range3');
-        return matches;
-    };
-
-
-    const determinePermutation = (numbers) => {
-        const nums = numbers.map(n => parseInt(n));
-        const sortedNums = [...nums].sort((a, b) => a - b);
-
-        // Create a mapping of number to its category (L, M, H) based on its relative position
-        const categoryMap = new Map();
-        categoryMap.set(sortedNums[0], 'L');  // lowest number
-        categoryMap.set(sortedNums[1], 'M');  // middle number
-        categoryMap.set(sortedNums[2], 'H');  // highest number
-
-        // Map each original number to its category
-        return nums.map(num => categoryMap.get(num)).join('-');
-    };
-
-    const analyzeRangePattern = (numbers) => {
-        const nums = numbers.map(n => parseInt(n));
-
-        // Get all possible range matches for each number
-        const numberPossibilities = nums.map(num => ({
-            number: num,
-            possibleRanges: getNumberRanges(num)
-        }));
-
-        // Try to assign exactly one number to each range
-        const rangeAssignments = new Map(); // range -> number
-        const numberAssignments = new Map(); // number -> range
-
-        // Helper function to try all possible assignments
-        const tryAssignments = (index) => {
-            if (index === nums.length) {
-                // Check if we have exactly one number in each range
-                return rangeAssignments.size === 3 &&
-                    ['range1', 'range2', 'range3'].every(r => rangeAssignments.has(r));
-            }
-
-            const currentNumber = numberPossibilities[index].number;
-            const possibleRanges = numberPossibilities[index].possibleRanges;
-
-            for (const range of possibleRanges) {
-                if (!rangeAssignments.has(range)) {
-                    // Try this assignment
-                    rangeAssignments.set(range, currentNumber);
-                    numberAssignments.set(currentNumber, range);
-
-                    if (tryAssignments(index + 1)) {
-                        return true;
-                    }
-
-                    // Undo assignment if it didn't work
-                    rangeAssignments.delete(range);
-                    numberAssignments.delete(currentNumber);
-                }
-            }
-
-            return tryAssignments(index + 1);
-        };
-
-        // Try to find a valid assignment
-        const isValid = tryAssignments(0);
+        const firstValid = first >= 0 && first <= 3;
+        const secondValid = second >= 2 && second <= 7 && second > first && second < third;
+        const thirdValid = third >= 6 && third <= 9 && third > second;
 
         return {
-            isValid,
-            numberAssignments: nums.map(num => numberAssignments.get(num) || null),
-            pattern: isValid ? 'Valid Pattern - One number in each range' : 'Invalid Pattern'
+            firstValid,
+            secondValid,
+            thirdValid,
+            isValid: firstValid && secondValid && thirdValid
         };
     };
 
     return (
         <Grid container spacing={2} sx={{ p: 2 }}>
-            {draws && draws.length > 0 && draws.slice(0, 60).map((item, index) => {
+            {draws?.slice(0, 60).map((item, index) => {
                 const numbers = [
-                    item.originalFirstNumber.toString(),
-                    item.originalSecondNumber.toString(),
-                    item.originalThirdNumber.toString()
+                    item.sortedFirstNumber.toString(),
+                    item.sortedSecondNumber.toString(),
+                    item.sortedThirdNumber.toString()
                 ];
-                const analysis = analyzeRangePattern(numbers);
-                const permutation = determinePermutation(numbers);
+                const validation = validateNumbers(numbers);
 
                 return (
                     <Grid item xs={12} sm={6} md={4} key={index}>
@@ -165,27 +88,29 @@ const DrawList = ({ draws }) => {
                             <CardContent>
                                 <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center', gap: 2 }}>
                                     {numbers.map((num, idx) => (
-                                        <Tooltip
+                                        <NumberBox
                                             key={idx}
-                                            title={analysis.numberAssignments[idx]
-                                                ? `Assigned to range: ${RANGES[analysis.numberAssignments[idx]].label}`
-                                                : 'Not assigned to any range'}
+                                            isvalid={
+                                                (idx === 0 && validation.firstValid) ||
+                                                (idx === 1 && validation.secondValid) ||
+                                                (idx === 2 && validation.thirdValid)
+                                            }
                                         >
-                                            <NumberBox assignedrange={analysis.numberAssignments[idx]}>
-                                                <Typography variant="h4" color="white">
-                                                    {num}
-                                                </Typography>
-                                                {analysis.numberAssignments[idx] ? (
-                                                    <CheckCircleOutline
-                                                        sx={{ color: 'success.light', mt: 0.5 }}
-                                                    />
-                                                ) : (
-                                                    <Cancel
-                                                        sx={{ color: 'error.light', mt: 0.5 }}
-                                                    />
-                                                )}
-                                            </NumberBox>
-                                        </Tooltip>
+                                            <Typography variant="h4" color="white">
+                                                {num}
+                                            </Typography>
+                                            {(idx === 0 && validation.firstValid) ||
+                                            (idx === 1 && validation.secondValid) ||
+                                            (idx === 2 && validation.thirdValid) ? (
+                                                <CheckCircleOutline
+                                                    sx={{ color: 'success.light', mt: 0.5 }}
+                                                />
+                                            ) : (
+                                                <Cancel
+                                                    sx={{ color: 'error.light', mt: 0.5 }}
+                                                />
+                                            )}
+                                        </NumberBox>
                                     ))}
                                 </Box>
 
@@ -196,19 +121,10 @@ const DrawList = ({ draws }) => {
                                     alignItems: 'center',
                                     gap: 1
                                 }}>
-                                    <PatternChip
-                                        label={analysis.pattern}
-                                        isvalid={analysis.isValid.toString()}
+                                    <StatusChip
+                                        label={validation.isValid ? 'Valid Pattern' : 'Invalid Pattern'}
+                                        isvalid={validation.isValid}
                                     />
-
-                                    <PermutationChip
-                                        icon={<SwapHoriz />}
-                                        label={`Pattern: ${permutation}`}
-                                    />
-
-                                    <Typography variant="body2" color="white" sx={{ mt: 1, textAlign: 'center' }}>
-                                        Need exactly one number in each range: [0-3], [2-7], [6-9]
-                                    </Typography>
 
                                     <Box sx={{
                                         display: 'flex',
